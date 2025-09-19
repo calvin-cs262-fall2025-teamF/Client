@@ -1,15 +1,3 @@
-# Team Project Client
-
-A simple React TypeScript client application with sign up/sign in functionality.
-
-## Features
-
-- Modern, responsive UI with gradient background
-- Sign in form with email and password
-- Sign up form with first name, last name, email, and password
-- Form validation and error handling
-- Loading states for better UX
-- Clean, professional design
 
 ## Getting Started
 
@@ -37,12 +25,7 @@ npm start
 
 4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-### Available Scripts
 
-- `npm start` - Runs the app in development mode
-- `npm build` - Builds the app for production
-- `npm test` - Launches the test runner
-- `npm eject` - Ejects from Create React App (one-way operation)
 
 ## Project Structure
 
@@ -63,20 +46,3 @@ Client/
 └── README.md
 ```
 
-## Next Steps
-
-This is a basic client application foundation. Future development should include:
-
-1. Backend API integration for authentication
-2. State management (Redux, Context API, or Zustand)
-3. Protected routes and user session management
-4. Additional pages and functionality
-5. Testing setup
-6. Error boundary implementation
-
-## Technologies Used
-
-- React 18
-- TypeScript
-- CSS3 with modern features
-- Create React App
