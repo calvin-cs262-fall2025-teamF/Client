@@ -3,6 +3,10 @@ import './App.css';
 import SignInForm from './components/SignInForm';
 import SignUpForm from './components/SignUpForm';
 
+/**
+ * Main App component that handles form switching between Sign In and Sign Up
+ * Uses local state to toggle between the two authentication forms
+ */
 function App() {
   const [isSignUp, setIsSignUp] = useState(false);
 

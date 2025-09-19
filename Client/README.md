@@ -63,6 +63,23 @@ Client/
 └── README.md
 ```
 
+## Development
+
+### Contributing
+
+1. Create a new branch for your feature: `git checkout -b feature/your-feature-name`
+2. Make your changes and test them locally
+3. Commit your changes: `git commit -m "Add your feature description"`
+4. Push to your branch: `git push origin feature/your-feature-name`
+5. Create a Pull Request for review
+
+### Code Style
+
+- Use TypeScript for all new components
+- Follow React functional component patterns
+- Use meaningful variable and function names
+- Add comments for complex logic
+
 ## Next Steps
 
 This is a basic client application foundation. Future development should include:
