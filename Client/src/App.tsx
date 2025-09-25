@@ -15,7 +15,7 @@ function App() {
       <div className="container">
         <div className="form-container">
           <div className="header">
-            <h1>Team Project</h1>
+            <h1>Team Fun Project</h1>
             <p className="subtitle">
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </p>
