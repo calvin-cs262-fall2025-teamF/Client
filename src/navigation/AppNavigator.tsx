@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
@@ -99,8 +100,10 @@ function MainTabs() {
 export default function AppNavigator() {
   const { isAuthenticated } = useSelector((state: RootState) => state.user);
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <MainTabs /> : <AuthStack />}
-    </NavigationContainer>
+    <SafeAreaView style={{ flex: 1 }}>
+      <NavigationContainer>
+        {isAuthenticated ? <MainTabs /> : <AuthStack />}
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
