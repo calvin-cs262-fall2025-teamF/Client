@@ -1,3 +1,4 @@
+// appnavigator.tsx
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -47,14 +48,27 @@ function MainTabs() {
         },
         tabBarActiveTintColor: '#3b82f6',
         tabBarInactiveTintColor: 'gray',
-        tabBarStyle: {
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
-        },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
+        },
+        // Floating tab bar lifted from the very bottom
+        tabBarStyle: {
+          position: 'absolute',
+          bottom: 16,
+          left: 16,
+          right: 16,
+          height: 65,
+          paddingTop: 6,
+          paddingBottom: 10,   // space above iPhone home indicator
+          backgroundColor: 'white',
+          borderRadius: 16,
+          borderTopWidth: 0,
+          elevation: 5,        // Android shadow
+          shadowColor: '#000', // iOS shadow
+          shadowOpacity: 0.05,
+          shadowOffset: { width: 0, height: 2 },
+          shadowRadius: 8,
         },
       })}
     >
@@ -84,7 +98,6 @@ function MainTabs() {
 
 export default function AppNavigator() {
   const { isAuthenticated } = useSelector((state: RootState) => state.user);
-
   return (
     <NavigationContainer>
       {isAuthenticated ? <MainTabs /> : <AuthStack />}
