@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CompanyRecommendation, RoleType } from '../types';
+import COLORS from '../constants/colors';
 
 interface CompanyTargetCardProps {
   company: CompanyRecommendation;
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#3b82f6',
+    color: COLORS.primary,
   },
   statLabel: {
     fontSize: 12,

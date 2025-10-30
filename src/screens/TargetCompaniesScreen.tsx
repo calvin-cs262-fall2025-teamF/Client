@@ -18,6 +18,7 @@ import { RootState } from '../store';
 import { addTargetCompany, removeTargetCompany } from '../store/userTargetCompaniesSlice';
 import { format } from 'date-fns';
 import DropdownSelector from '../components/DropdownSelector';
+import COLORS from '../constants/colors';
 
 export default function TargetCompaniesScreen() {
   const dispatch = useDispatch();
@@ -193,7 +194,7 @@ export default function TargetCompaniesScreen() {
                 {event.registrationLink && (
                   <TouchableOpacity style={styles.registerButton}>
                     <Text style={styles.registerButtonText}>Register</Text>
-                    <Ionicons name="open-outline" size={16} color="#3b82f6" />
+                    <Ionicons name="open-outline" size={16} color={COLORS.primary} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -335,7 +336,7 @@ export default function TargetCompaniesScreen() {
                   <Ionicons
                     name={tab.icon as any}
                     size={20}
-                    color={activeTab === tab.key ? '#3b82f6' : '#6b7280'}
+                    color={activeTab === tab.key ? COLORS.primary : '#6b7280'}
                   />
                   <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
                     {tab.label}
@@ -475,7 +476,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   activeRoleTab: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
   },
   roleTabText: {
     fontSize: 14,
@@ -548,7 +549,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   discoverButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -622,7 +623,7 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#3b82f6',
+    borderBottomColor: COLORS.primary,
   },
   tabText: {
     fontSize: 12,
@@ -630,7 +631,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   activeTabText: {
-    color: '#3b82f6',
+    color: COLORS.primary,
   },
   modalContent: {
     flex: 1,
@@ -710,7 +711,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -771,7 +772,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   registerButtonText: {
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -896,7 +897,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

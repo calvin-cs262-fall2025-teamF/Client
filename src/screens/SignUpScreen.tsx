@@ -20,6 +20,7 @@ import { targetCompanies } from '../data/companiesData';
 import DropdownSelector from '../components/DropdownSelector';
 import { MAJORS, TARGET_ROLES, TARGET_INDUSTRIES, TARGET_LOCATIONS } from '../constants/formOptions';
 import * as DocumentPicker from 'expo-document-picker';
+import COLORS from '../constants/colors';
 
 interface PersonalInfo {
   name: string;
@@ -346,7 +347,7 @@ const styles = StyleSheet.create({
   },
   progress: {
     height: '100%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     borderRadius: 2,
   },
 
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
   },
 
   uploadButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -422,7 +423,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flex: 2,
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginLinkText: {
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontSize: 16,
   },
 });

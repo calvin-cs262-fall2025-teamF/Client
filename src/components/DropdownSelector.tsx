@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../constants/colors';
 
 interface DropdownSelectorProps {
   label: string;
@@ -144,7 +145,7 @@ export default function DropdownSelector({
                   {option}
                 </Text>
                 {isSelected(option) && (
-                  <Ionicons name="checkmark" size={20} color="#3b82f6" />
+                  <Ionicons name="checkmark" size={20} color={COLORS.primary} />
                 )}
               </TouchableOpacity>
             ))}
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   optionsList: {
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   selectedOptionText: {
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   otherInputContainer: {
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   otherSubmitButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 6,

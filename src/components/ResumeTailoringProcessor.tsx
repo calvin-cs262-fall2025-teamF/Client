@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../constants/colors';
 
 interface ResumeTailoringProcessorProps {
   visible: boolean;
@@ -125,7 +126,7 @@ export default function ResumeTailoringProcessor({
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Ionicons name="document-text" size={32} color="#3b82f6" />
+              <Ionicons name="document-text" size={32} color={COLORS.primary} />
             </View>
             <Text style={styles.title}>Tailoring Resume</Text>
             <Text style={styles.subtitle}>
@@ -149,7 +150,7 @@ export default function ResumeTailoringProcessor({
 
             {/* Current Step */}
             <View style={styles.stepContainer}>
-              <ActivityIndicator size="small" color="#3b82f6" />
+              <ActivityIndicator size="small" color={COLORS.primary} />
               <Text style={styles.stepText}>
                 {steps[currentStep] || 'Processing...'}
               </Text>
@@ -164,7 +165,7 @@ export default function ResumeTailoringProcessor({
                   style={[
                     styles.stepIndicator,
                     {
-                      backgroundColor: index <= currentStep ? '#3b82f6' : '#e5e7eb',
+                      backgroundColor: index <= currentStep ? COLORS.primary : '#e5e7eb',
                     },
                   ]}
                 >
@@ -256,13 +257,13 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     borderRadius: 4,
   },
   progressText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3b82f6',
+    color: COLORS.primary,
     textAlign: 'center',
   },
   stepContainer: {

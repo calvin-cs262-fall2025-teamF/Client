@@ -15,6 +15,7 @@ import { addApplication, updateApplication, deleteApplication, setWeeklyGoal } f
 import { Application, ApplicationStatus } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import COLORS from '../constants/colors';
 
 export default function JobTrackerScreen() {
   const dispatch = useDispatch();
@@ -92,7 +93,7 @@ export default function JobTrackerScreen() {
 
   const getStatusColor = (status: ApplicationStatus) => {
     switch (status) {
-      case 'Applied': return '#3b82f6';
+      case 'Applied': return COLORS.primary;
       case 'Interview': return '#059669';
       case 'Offer': return '#f59e0b';
       case 'Rejected': return '#dc2626';
@@ -350,7 +351,7 @@ export default function JobTrackerScreen() {
 }
 
 const getAvatarColor = (company: string) => {
-  const colors = ['#3b82f6', '#059669', '#f59e0b', '#8b5cf6', '#dc2626', '#06b6d4'];
+  const colors = [COLORS.primary, '#059669', '#f59e0b', '#8b5cf6', '#dc2626', '#06b6d4'];
   const index = company.length % colors.length;
   return colors[index];
 };
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -433,7 +434,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeChip: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
   },
   statChipText: {
     fontSize: 14,
@@ -576,7 +577,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyStateButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
@@ -613,7 +614,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   modalContent: {
@@ -696,7 +697,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
   },
   goalSaveText: {

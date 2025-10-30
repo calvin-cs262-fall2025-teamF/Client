@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { targetCompanies } from '../data/companiesData';
 import { startOfWeek, endOfWeek, isWithinInterval, parseISO } from 'date-fns';
+import COLORS from '../constants/colors';
 
 export default function DashboardScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
@@ -123,7 +124,7 @@ export default function DashboardScreen({ navigation }: any) {
             title="Total Applications"
             value={stats.totalApplications}
             icon="briefcase-outline"
-            color="#3b82f6"
+            color={COLORS.primary}
             trendingUp={stats.trendingUp}
           />
           <StatCard
@@ -161,7 +162,7 @@ export default function DashboardScreen({ navigation }: any) {
             style={styles.actionButton}
             onPress={() => navigation.navigate('JobTracker')}
           >
-            <Ionicons name="add-circle-outline" size={24} color="#3b82f6" />
+            <Ionicons name="add-circle-outline" size={24} color={COLORS.primary} />
             <Text style={styles.actionButtonText}>Add New Application</Text>
             <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
           </TouchableOpacity>
@@ -248,7 +249,7 @@ export default function DashboardScreen({ navigation }: any) {
 }
 
 const getAvatarColor = (company: string) => {
-  const colors = ['#3b82f6', '#059669', '#f59e0b', '#8b5cf6', '#dc2626', '#06b6d4'];
+  const colors = [COLORS.primary, '#059669', '#f59e0b', '#8b5cf6', '#dc2626', '#06b6d4'];
   const index = company.length % colors.length;
   return colors[index];
 };
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  seeAllText: { color: '#3b82f6', fontSize: 14, fontWeight: '500' },
+  seeAllText: { color: COLORS.primary, fontSize: 14, fontWeight: '500' },
   targetCompaniesScroll: { marginHorizontal: -20, paddingHorizontal: 20 },
   targetCompanyCard: {
     backgroundColor: 'white',
@@ -462,5 +463,5 @@ const styles = StyleSheet.create({
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   statusText: { fontSize: 12, fontWeight: '600' },
   viewAllButton: { alignItems: 'center', paddingVertical: 12, marginTop: 8 },
-  viewAllText: { color: '#3b82f6', fontSize: 16, fontWeight: '500' },
+  viewAllText: { color: COLORS.primary, fontSize: 16, fontWeight: '500' },
 });
