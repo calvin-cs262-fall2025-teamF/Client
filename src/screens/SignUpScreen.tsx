@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../store/userSlice';
 import { initializeTargetCompaniesFromSignup } from '../store/userTargetCompaniesSlice';
@@ -38,6 +41,8 @@ interface CareerPreferences {
 
 export default function SignUpScreen({ navigation }: any) {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [resumeUri, setResumeUri] = useState<string | null>(null);
 
@@ -92,7 +97,6 @@ export default function SignUpScreen({ navigation }: any) {
       return;
     }
 
-    // Smart company matching for selected companies
     const companyTexts = careerPreferences.targetCompanies.join(', ');
     const matchedCompanyIds = CompanyMatcher.getMatchedCompanyIds(companyTexts);
     const unmatchedCompanies = CompanyMatcher.getUnmatchedCompanies(companyTexts);
@@ -115,7 +119,6 @@ export default function SignUpScreen({ navigation }: any) {
 
     dispatch(setUser(newUser));
 
-    // Initialize user target companies with matched company IDs
     if (matchedCompanyIds.length > 0) {
       dispatch(initializeTargetCompaniesFromSignup(matchedCompanyIds));
     }
@@ -140,6 +143,8 @@ export default function SignUpScreen({ navigation }: any) {
               value={personalInfo.linkedinProfile}
               onChangeText={(text) => setPersonalInfo({ ...personalInfo, linkedinProfile: text })}
               placeholder="linkedin.com/in/yourprofile"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
           </View>
         );
@@ -172,13 +177,13 @@ export default function SignUpScreen({ navigation }: any) {
               onChangeText={(text) => setEducation({ ...education, graduationYear: text })}
               placeholder="2024"
               keyboardType="numeric"
+              maxLength={4}
             />
           </View>
         );
 
-      case 3:
-        const companyOptions = targetCompanies.map(company => company.name).concat(['Other']);
-
+      case 3: {
+        const companyOptions = targetCompanies.map((c) => c.name).concat(['Other']);
         return (
           <View style={styles.stepContainer}>
             <Text style={styles.stepTitle}>Career Preferences</Text>
@@ -187,7 +192,9 @@ export default function SignUpScreen({ navigation }: any) {
               label="Target Companies"
               options={companyOptions}
               value={careerPreferences.targetCompanies}
-              onValueChange={(value) => setCareerPreferences({ ...careerPreferences, targetCompanies: value as string[] })}
+              onValueChange={(value) =>
+                setCareerPreferences({ ...careerPreferences, targetCompanies: value as string[] })
+              }
               placeholder="Select target companies"
               multiSelect={true}
               allowOther={true}
@@ -197,7 +204,9 @@ export default function SignUpScreen({ navigation }: any) {
               label="Target Roles"
               options={TARGET_ROLES}
               value={careerPreferences.targetRoles}
-              onValueChange={(value) => setCareerPreferences({ ...careerPreferences, targetRoles: value as string[] })}
+              onValueChange={(value) =>
+                setCareerPreferences({ ...careerPreferences, targetRoles: value as string[] })
+              }
               placeholder="Select target roles"
               multiSelect={true}
               allowOther={true}
@@ -207,7 +216,9 @@ export default function SignUpScreen({ navigation }: any) {
               label="Target Industries"
               options={TARGET_INDUSTRIES}
               value={careerPreferences.targetIndustries}
-              onValueChange={(value) => setCareerPreferences({ ...careerPreferences, targetIndustries: value as string[] })}
+              onValueChange={(value) =>
+                setCareerPreferences({ ...careerPreferences, targetIndustries: value as string[] })
+              }
               placeholder="Select target industries"
               multiSelect={true}
               allowOther={true}
@@ -217,13 +228,16 @@ export default function SignUpScreen({ navigation }: any) {
               label="Target Locations"
               options={TARGET_LOCATIONS}
               value={careerPreferences.targetLocations}
-              onValueChange={(value) => setCareerPreferences({ ...careerPreferences, targetLocations: value as string[] })}
+              onValueChange={(value) =>
+                setCareerPreferences({ ...careerPreferences, targetLocations: value as string[] })
+              }
               placeholder="Select target locations"
               multiSelect={true}
               allowOther={true}
             />
           </View>
         );
+      }
 
       case 4:
         return (
@@ -234,9 +248,7 @@ export default function SignUpScreen({ navigation }: any) {
                 {resumeUri ? 'Resume Selected ✓' : 'Upload Resume (PDF)'}
               </Text>
             </TouchableOpacity>
-            {resumeUri && (
-              <Text style={styles.uploadStatus}>Resume ready to upload</Text>
-            )}
+            {resumeUri && <Text style={styles.uploadStatus}>Resume ready to upload</Text>}
             <Text style={styles.note}>
               You can upload your resume now or skip this step and add it later from your profile.
             </Text>
@@ -249,49 +261,67 @@ export default function SignUpScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Step {currentStep} of 4</Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progress, { width: `${(currentStep / 4) * 100}%` }]} />
-        </View>
-      </View>
-
-      {renderStep()}
-
-      <View style={styles.buttonContainer}>
-        {currentStep > 1 && (
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-        )}
-        {currentStep < 4 ? (
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-            <Text style={styles.nextButtonText}>Next</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Create Account</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <TouchableOpacity
-        style={styles.loginLink}
-        onPress={() => navigation.navigate('Login')}
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.select({ ios: 'padding', android: 'height' })}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : insets.top}
       >
-        <Text style={styles.loginLinkText}>Already have an account? Sign In</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 24,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Step {currentStep} of 4</Text>
+            <View style={styles.progressBar}>
+              <View style={[styles.progress, { width: `${(currentStep / 4) * 100}%` }]} />
+            </View>
+          </View>
+
+          {renderStep()}
+
+          <View style={styles.buttonContainer}>
+            {currentStep > 1 && (
+              <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+            )}
+            {currentStep < 4 ? (
+              <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                <Text style={styles.nextButtonText}>Next</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.submitButtonText}>Create Account</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.loginLink}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={styles.loginLinkText}>Already have an account? Sign In</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  safe: { flex: 1, backgroundColor: '#fff' },
+
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
   },
+
   header: {
     padding: 20,
     backgroundColor: 'white',
@@ -319,6 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3b82f6',
     borderRadius: 2,
   },
+
   stepContainer: {
     padding: 20,
   },
@@ -344,6 +375,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: 'white',
   },
+
   uploadButton: {
     backgroundColor: '#3b82f6',
     paddingVertical: 16,
@@ -370,6 +402,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     lineHeight: 20,
   },
+
   buttonContainer: {
     flexDirection: 'row',
     padding: 20,
@@ -411,6 +444,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+
   loginLink: {
     padding: 20,
     alignItems: 'center',
