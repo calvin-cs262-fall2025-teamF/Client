@@ -6,6 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { store } from './src/store';
 import AppNavigator from './src/navigation/AppNavigator';
 import { initializeApp } from './src/utils/appInitialization';
+import COLORS from './src/constants/colors';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +31,7 @@ export default function App() {
         <SafeAreaView style={styles.loadingContainer}>
           <Text style={styles.appTitle}>Team Fun</Text>
           <Text style={styles.subtitle}>Job Application Tracker</Text>
-          <ActivityIndicator size="large" color="#3b82f6" style={styles.loader} />
+          <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} />
           <Text style={styles.loadingText}>Loading your data...</Text>
         </SafeAreaView>
       </SafeAreaProvider>

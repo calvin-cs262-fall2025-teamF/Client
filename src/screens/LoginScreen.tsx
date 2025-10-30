@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUser } from '../store/userSlice';
 import { User } from '../types';
+import COLORS from '../constants/colors';
 
 export default function LoginScreen({ navigation }: any) {
   const dispatch = useDispatch();
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   loginButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signUpLinkText: {
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontSize: 16,
   },
 });

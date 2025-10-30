@@ -24,6 +24,7 @@ import {
 } from '../store/resumeSlice';
 import { Resume, TailoredResume } from '../types';
 import ResumeTailoringProcessor from '../components/ResumeTailoringProcessor';
+import COLORS from '../constants/colors';
 
 export default function ResumeScreen() {
   const dispatch = useDispatch();
@@ -169,7 +170,7 @@ export default function ResumeScreen() {
       <View style={styles.resumeHeader}>
         <View style={styles.resumeInfo}>
           <View style={styles.resumeNameContainer}>
-            <Ionicons name="document-text" size={20} color="#3b82f6" />
+            <Ionicons name="document-text" size={20} color={COLORS.primary} />
             <Text style={styles.resumeName}>{resume.name}</Text>
             {resume.isPrimary && (
               <View style={styles.primaryBadge}>
@@ -254,7 +255,7 @@ export default function ResumeScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Upload Resume</Text>
           <TouchableOpacity style={styles.uploadButton} onPress={handleUploadResume}>
-            <Ionicons name="cloud-upload-outline" size={24} color="#3b82f6" />
+            <Ionicons name="cloud-upload-outline" size={24} color={COLORS.primary} />
             <Text style={styles.uploadButtonText}>Upload PDF Resume</Text>
             <Text style={styles.uploadSubtext}>PDF files only</Text>
           </TouchableOpacity>
@@ -338,7 +339,7 @@ export default function ResumeScreen() {
                   <Ionicons
                     name={tailoringForm.selectedResumeId === resume.id ? "radio-button-on" : "radio-button-off"}
                     size={20}
-                    color={tailoringForm.selectedResumeId === resume.id ? "#3b82f6" : "#9ca3af"}
+                    color={tailoringForm.selectedResumeId === resume.id ? COLORS.primary : "#9ca3af"}
                   />
                   <Text style={[
                     styles.resumeOptionText,
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
   uploadButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3b82f6',
+    color: COLORS.primary,
     marginTop: 8,
   },
   uploadSubtext: {
@@ -620,7 +621,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontWeight: '600',
   },
   modalContent: {
@@ -660,7 +661,7 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   selectedResumeOption: {
-    borderColor: '#3b82f6',
+    borderColor: COLORS.primary,
     backgroundColor: '#eff6ff',
   },
   resumeOptionText: {
@@ -669,7 +670,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   selectedResumeOptionText: {
-    color: '#3b82f6',
+    color: COLORS.primary,
     fontWeight: '500',
   },
   modalOverlay: {
@@ -721,7 +722,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#3b82f6',
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
   },
   saveRenameText: {
