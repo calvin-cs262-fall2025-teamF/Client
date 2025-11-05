@@ -236,7 +236,11 @@ export default function ResumeScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Resume Manager</Text>
@@ -429,6 +433,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
+    paddingBottom: 97, // Account for floating tab bar (65px height + 16px bottom margin + 16px extra space)
   },
   header: {
     padding: 20,
