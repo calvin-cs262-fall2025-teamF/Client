@@ -100,7 +100,7 @@ export default function DashboardScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.safe} edges={['left','right']}>
       {/* Header sits below the notch thanks to paddingTop using insets.top */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[styles.header, { paddingTop: insets.top }]}>
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>Welcome back, {currentUser?.name}!</Text>
@@ -116,7 +116,7 @@ export default function DashboardScreen({ navigation }: any) {
       {/* Scroll area gets extra bottom padding so content clears the tab bar */}
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 88 }} // ~88 = tab bar height
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 75 }} // ~75 = tab bar height + spacing
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.statsGrid}>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
 
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingBottom: 8,
     backgroundColor: 'white',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e5e7eb',

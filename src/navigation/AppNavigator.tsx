@@ -57,7 +57,7 @@ function MainTabs() {
         // Floating tab bar lifted from the very bottom
         tabBarStyle: {
           position: 'absolute',
-          bottom: 16,
+          bottom: 8,
           left: 16,
           right: 16,
           height: 65,
@@ -101,7 +101,7 @@ function MainTabs() {
 export default function AppNavigator() {
   const { isAuthenticated } = useSelector((state: RootState) => state.user);
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
       <NavigationContainer>
         {isAuthenticated ? <MainTabs /> : <AuthStack />}
       </NavigationContainer>

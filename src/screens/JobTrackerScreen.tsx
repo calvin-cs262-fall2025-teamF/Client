@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { addApplication, updateApplication, deleteApplication, setWeeklyGoal } from '../store/applicationsSlice';
@@ -18,11 +19,14 @@ import { format } from 'date-fns';
 import COLORS from '../constants/colors';
 
 export default function JobTrackerScreen() {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const { applications, weeklyGoal } = useSelector((state: RootState) => state.applications);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
   const [editingApplication, setEditingApplication] = useState<Application | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [filterStatus, setFilterStatus] = useState<ApplicationStatus | 'All'>('All');
 
   const [formData, setFormData] = useState({
@@ -30,6 +34,7 @@ export default function JobTrackerScreen() {
     role: '',
     location: '',
     notes: '',
+    jobLink: '',
   });
 
   const [goalInput, setGoalInput] = useState(weeklyGoal.toString());
@@ -59,15 +64,33 @@ export default function JobTrackerScreen() {
       status: 'Applied',
       appliedDate: new Date().toISOString(),
       notes: formData.notes,
+      jobLink: formData.jobLink,
     };
 
     dispatch(addApplication(newApplication));
-    setFormData({ company: '', role: '', location: '', notes: '' });
+    setFormData({ company: '', role: '', location: '', notes: '', jobLink: '' });
     setShowAddModal(false);
   };
 
   const handleUpdateStatus = (applicationId: string, newStatus: ApplicationStatus) => {
     dispatch(updateApplication({ id: applicationId, updates: { status: newStatus } }));
+    setShowStatusModal(false);
+    setEditingApplication(null);
+  };
+
+  const toggleCardExpansion = (applicationId: string) => {
+    const newExpandedCards = new Set(expandedCards);
+    if (newExpandedCards.has(applicationId)) {
+      newExpandedCards.delete(applicationId);
+    } else {
+      newExpandedCards.add(applicationId);
+    }
+    setExpandedCards(newExpandedCards);
+  };
+
+  const openStatusModal = (application: Application) => {
+    setEditingApplication(application);
+    setShowStatusModal(true);
   };
 
   const handleDeleteApplication = (applicationId: string) => {
@@ -110,11 +133,16 @@ export default function JobTrackerScreen() {
   };
 
   const ApplicationCard = ({ application }: { application: Application }) => {
-    const nextStatus = getNextStatus(application.status);
+    const isExpanded = expandedCards.has(application.id);
 
     return (
       <View style={styles.applicationCard}>
-        <View style={styles.cardHeader}>
+        <TouchableOpacity
+          style={styles.cardHeader}
+          onPress={() => toggleCardExpansion(application.id)}
+          accessibilityLabel={`${isExpanded ? 'Collapse' : 'Expand'} details for ${application.company} application`}
+          accessibilityRole="button"
+        >
           <View style={[styles.companyAvatar, { backgroundColor: getAvatarColor(application.company) }]}>
             <Text style={styles.avatarText}>
               {application.company.charAt(0).toUpperCase()}
@@ -125,62 +153,75 @@ export default function JobTrackerScreen() {
             <Text style={styles.roleName}>{application.role}</Text>
             <Text style={styles.locationText}>{application.location}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteApplication(application.id)}
-            accessibilityLabel={`Delete application for ${application.company}`}
-            accessibilityRole="button"
-          >
-            <Ionicons name="trash-outline" size={20} color="#dc2626" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.cardBody}>
-          <View style={styles.statusContainer}>
+          <View style={styles.cardHeaderActions}>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(application.status) }]}>
               <Text style={styles.statusText}>{application.status}</Text>
             </View>
-            <Text style={styles.appliedDate}>
-              Applied {format(new Date(application.appliedDate), 'MMM dd, yyyy')}
-            </Text>
+            <Ionicons
+              name={isExpanded ? "chevron-up" : "chevron-down"}
+              size={20}
+              color="#6b7280"
+            />
           </View>
+        </TouchableOpacity>
 
-          {application.notes && (
-            <Text style={styles.notes}>{application.notes}</Text>
-          )}
-        </View>
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <View style={styles.cardBody}>
+              <Text style={styles.appliedDate}>
+                Applied {format(new Date(application.appliedDate), 'MMM dd, yyyy')}
+              </Text>
 
-        <View style={styles.cardActions}>
-          {nextStatus && (
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: getStatusColor(nextStatus) }]}
-              onPress={() => handleUpdateStatus(application.id, nextStatus)}
-              accessibilityLabel={`Move ${application.company} application to ${nextStatus} status`}
-              accessibilityRole="button"
-            >
-              <Text style={styles.actionButtonText}>Move to {nextStatus}</Text>
-            </TouchableOpacity>
-          )}
-          {application.status !== 'Rejected' && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.rejectButton]}
-              onPress={() => handleUpdateStatus(application.id, 'Rejected')}
-              accessibilityLabel={`Mark ${application.company} application as rejected`}
-              accessibilityRole="button"
-            >
-              <Text style={styles.rejectButtonText}>Mark Rejected</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              {application.notes && (
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailLabel}>Notes:</Text>
+                  <Text style={styles.notes}>{application.notes}</Text>
+                </View>
+              )}
+
+              {application.jobLink && (
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailLabel}>Job Link:</Text>
+                  <Text style={styles.jobLink} numberOfLines={1}>
+                    {application.jobLink}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.cardActions}>
+              <TouchableOpacity
+                style={styles.statusButton}
+                onPress={() => openStatusModal(application)}
+                accessibilityLabel={`Change status for ${application.company} application`}
+                accessibilityRole="button"
+              >
+                <Ionicons name="swap-vertical" size={16} color={COLORS.primary} />
+                <Text style={styles.statusButtonText}>Change Status</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteApplication(application.id)}
+                accessibilityLabel={`Delete application for ${application.company}`}
+                accessibilityRole="button"
+              >
+                <Ionicons name="trash-outline" size={16} color="#dc2626" />
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     );
   };
 
   return (
     <>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Job Tracker</Text>
+      <SafeAreaView style={styles.safe} edges={['left','right']}>
+        <View style={styles.container}>
+          <View style={[styles.header, { paddingTop: insets.top }]}>
+            <Text style={styles.title}>Job Tracker</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.goalButton}
@@ -224,7 +265,10 @@ export default function JobTrackerScreen() {
           </ScrollView>
         </View>
 
-        <ScrollView style={styles.applicationsList}>
+        <ScrollView 
+          style={styles.applicationsList}
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 75 }}
+        >
           {filteredApplications.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="briefcase-outline" size={64} color="#9ca3af" />
@@ -263,7 +307,8 @@ export default function JobTrackerScreen() {
         >
           <Ionicons name="add" size={28} color="white" />
         </TouchableOpacity>
-      </View>
+        </View>
+      </SafeAreaView>
 
       {/* Add Application Modal */}
       <Modal visible={showAddModal} animationType="slide" presentationStyle="pageSheet">
@@ -293,6 +338,17 @@ export default function JobTrackerScreen() {
               value={formData.role}
               onChangeText={(text) => setFormData({ ...formData, role: text })}
               placeholder="Enter role title"
+            />
+
+            <Text style={styles.inputLabel}>Job Link</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.jobLink}
+              onChangeText={(text) => setFormData({ ...formData, jobLink: text })}
+              placeholder="Enter job posting URL"
+              keyboardType="url"
+              autoCapitalize="none"
+              autoCorrect={false}
             />
 
             <Text style={styles.inputLabel}>Location</Text>
@@ -346,6 +402,43 @@ export default function JobTrackerScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Status Change Modal */}
+      <Modal visible={showStatusModal} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.statusModal}>
+            <Text style={styles.statusModalTitle}>Change Status</Text>
+            <Text style={styles.statusModalSubtitle}>
+              {editingApplication && `${editingApplication.company} - ${editingApplication.role}`}
+            </Text>
+
+            {(['Applied', 'Interview', 'Offer', 'Rejected'] as ApplicationStatus[]).map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.statusOption,
+                  editingApplication?.status === status && styles.currentStatusOption
+                ]}
+                onPress={() => editingApplication && handleUpdateStatus(editingApplication.id, status)}
+              >
+                <View style={[styles.statusOptionBadge, { backgroundColor: getStatusColor(status) }]}>
+                  <Text style={styles.statusOptionText}>{status}</Text>
+                </View>
+                {editingApplication?.status === status && (
+                  <Text style={styles.currentStatusLabel}>Current</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity
+              style={styles.statusModalCancel}
+              onPress={() => setShowStatusModal(false)}
+            >
+              <Text style={styles.statusModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -357,6 +450,7 @@ const getAvatarColor = (company: string) => {
 };
 
 const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#f9fafb' },
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
@@ -365,7 +459,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
@@ -398,7 +493,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 100,
     right: 20,
     backgroundColor: COLORS.primary,
     width: 56,
@@ -499,11 +594,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   deleteButton: {
-    padding: 12,
-    minHeight: 44,
-    minWidth: 44,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#fef2f2',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    gap: 6,
+    flex: 1,
+    justifyContent: 'center',
   },
   cardBody: {
     marginBottom: 16,
@@ -704,5 +805,115 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  cardHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  expandedContent: {
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    marginTop: 12,
+  },
+  detailSection: {
+    marginTop: 12,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  jobLink: {
+    fontSize: 14,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+  statusButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    gap: 6,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  statusButtonText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  deleteButtonText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  statusModal: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    margin: 20,
+    minWidth: 300,
+  },
+  statusModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  statusModalSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  statusOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f9fafb',
+  },
+  currentStatusOption: {
+    backgroundColor: '#e5f3ff',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  statusOptionBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  statusOptionText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  currentStatusLabel: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  statusModalCancel: {
+    marginTop: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+  },
+  statusModalCancelText: {
+    color: '#6b7280',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
