@@ -9,6 +9,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,6 +28,7 @@ import ResumeTailoringProcessor from '../components/ResumeTailoringProcessor';
 import COLORS from '../constants/colors';
 
 export default function ResumeScreen() {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state: RootState) => state.user);
   const { resumes, tailoredResumes, isProcessing } = useSelector((state: RootState) => state.resume);
@@ -235,18 +237,22 @@ export default function ResumeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <>
+    <SafeAreaView style={styles.safe} edges={['left','right']}>
+      {/* Header sits below the notch thanks to paddingTop using insets.top */}
+      <View style={[styles.header, { paddingTop: insets.top }]}>
+        <Text style={styles.title}>Resume Manager</Text>
+        <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
+      </View>
+
+      {/* Scroll area gets extra bottom padding so content clears the tab bar */}
       <ScrollView
+        style={styles.container}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 75 }}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Resume Manager</Text>
-          <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
-        </View>
-
         {/* Primary Resume Section */}
         {primaryResume && (
           <View style={styles.section}>
@@ -310,9 +316,10 @@ export default function ResumeScreen() {
           </View>
         )}
       </ScrollView>
+    </SafeAreaView>
 
-      {/* Tailoring Modal */}
-      <Modal
+    {/* Tailoring Modal */}
+    <Modal
         visible={showTailoringModal}
         animationType="slide"
         presentationStyle="pageSheet"
@@ -425,18 +432,19 @@ export default function ResumeScreen() {
         companyName={tailoringForm.companyName}
         positionTitle={tailoringForm.positionTitle}
       />
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#f9fafb' },
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
-    paddingBottom: 97, // Account for floating tab bar (65px height + 16px bottom margin + 16px extra space)
   },
   header: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
