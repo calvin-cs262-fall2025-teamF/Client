@@ -16,6 +16,7 @@ import { CompanyRecommendation, RoleType, ChecklistItem } from '../types';
 import { CompanyTargetCard } from '../components/CompanyTargetCard';
 import { RootState } from '../store';
 import { addTargetCompany, removeTargetCompany } from '../store/userTargetCompaniesSlice';
+import { toggleChecklistItem } from '../store/checklistSlice';
 import { format } from 'date-fns';
 import DropdownSelector from '../components/DropdownSelector';
 import COLORS from '../constants/colors';
@@ -23,6 +24,7 @@ import COLORS from '../constants/colors';
 export default function TargetCompaniesScreen() {
   const dispatch = useDispatch();
   const { targetCompanies: userTargetCompanies } = useSelector((state: RootState) => state.userTargetCompanies);
+  const checklistProgress = useSelector((state: RootState) => state.checklist.progress);
   const [selectedCompany, setSelectedCompany] = useState<CompanyRecommendation | null>(null);
   const [selectedRole, setSelectedRole] = useState<RoleType>('Full-time');
   const [activeTab, setActiveTab] = useState<'timeline' | 'events' | 'courses' | 'checklist'>('timeline');
@@ -80,6 +82,14 @@ export default function TargetCompaniesScreen() {
     Alert.alert('Custom Company', `"${newCompanyName}" will be added to your target list. This feature will be enhanced in a future update.`);
     setNewCompanyName('');
     setShowAddCompanyModal(false);
+  };
+
+  const handleToggleChecklistItem = (companyId: string, itemId: string) => {
+    dispatch(toggleChecklistItem({ companyId, itemId }));
+  };
+
+  const getChecklistItemStatus = (companyId: string, itemId: string): boolean => {
+    return checklistProgress[companyId]?.[itemId] || false;
   };
 
   const renderMyTargetsSection = () => {
@@ -245,21 +255,30 @@ export default function TargetCompaniesScreen() {
               return (
                 <View key={category} style={styles.checklistCategory}>
                   <Text style={styles.categoryTitle}>{category}</Text>
-                  {items.map((item) => (
-                    <View key={item.id} style={styles.checklistItem}>
-                      <TouchableOpacity style={styles.checkbox}>
-                        {item.completed && (
-                          <Ionicons name="checkmark" size={16} color="#059669" />
-                        )}
-                      </TouchableOpacity>
-                      <View style={styles.checklistContent}>
-                        <Text style={[styles.checklistTitle, item.completed && styles.completedTitle]}>
-                          {item.title}
-                        </Text>
-                        <Text style={styles.checklistDescription}>{item.description}</Text>
+                  {items.map((item) => {
+                    const isCompleted = getChecklistItemStatus(selectedCompany.id, item.id);
+                    return (
+                      <View key={item.id} style={styles.checklistItem}>
+                        <TouchableOpacity
+                          style={[styles.checkbox, isCompleted && styles.completedCheckbox]}
+                          onPress={() => handleToggleChecklistItem(selectedCompany.id, item.id)}
+                        >
+                          {isCompleted && (
+                            <Ionicons name="checkmark" size={16} color="#059669" />
+                          )}
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.checklistContent}
+                          onPress={() => handleToggleChecklistItem(selectedCompany.id, item.id)}
+                        >
+                          <Text style={[styles.checklistTitle, isCompleted && styles.completedTitle]}>
+                            {item.title}
+                          </Text>
+                          <Text style={styles.checklistDescription}>{item.description}</Text>
+                        </TouchableOpacity>
                       </View>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               );
             })}
@@ -871,6 +890,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
     marginTop: 2,
+  },
+  completedCheckbox: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#059669',
   },
   checklistContent: {
     flex: 1,

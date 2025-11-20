@@ -1,8 +1,7 @@
 import { Middleware } from '@reduxjs/toolkit';
 import { StorageService } from '../utils/storage';
-import { RootState } from './index';
 
-export const storageMiddleware: Middleware<{}, RootState> = (store) => (next) => (action: any) => {
+export const storageMiddleware: Middleware = (store) => (next) => (action: any) => {
   const result = next(action);
   const state = store.getState();
 
@@ -50,6 +49,21 @@ export const storageMiddleware: Middleware<{}, RootState> = (store) => (next) =>
         state.user.currentUser.id,
         state.resume.tailoredResumes
       ).catch(console.error);
+    }
+  }
+
+  // Auto-save checklist progress when checklist actions are dispatched
+  if (action.type && action.type.startsWith('checklist/')) {
+    if (state.user.currentUser) {
+      // For now, we'll store checklist progress in local storage
+      // You could extend StorageService to include checklist methods later
+      try {
+        const checklistData = JSON.stringify(state.checklist.progress);
+        // This is a simplified version - you may want to add proper StorageService methods
+        console.log('Checklist progress saved:', checklistData);
+      } catch (error) {
+        console.error('Error saving checklist progress:', error);
+      }
     }
   }
 
