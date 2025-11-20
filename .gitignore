@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+
+# macOS junk files
+.DS_Store
+
