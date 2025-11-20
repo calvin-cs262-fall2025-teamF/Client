@@ -102,3 +102,7 @@ src/
 
 ## Relate Repositories
 https://github.com/calvin-cs262-fall2025-teamF/poros_data_service
+
+## Related Repositories
+- [Project](https://github.com/calvin-cs262-fall2025-teamF/Project)
+- [Poros Data Service](https://github.com/calvin-cs262-fall2025-teamF/poros_data_service)
