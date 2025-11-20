@@ -100,8 +100,6 @@ src/
 
 - Synced by @kbaah on 20251025
 
-## Relate Repositories
-https://github.com/calvin-cs262-fall2025-teamF/poros_data_service
 
 ## Related Repositories
 - [Project](https://github.com/calvin-cs262-fall2025-teamF/Project)
