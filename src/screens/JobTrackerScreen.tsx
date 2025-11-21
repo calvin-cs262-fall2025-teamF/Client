@@ -297,7 +297,7 @@ export default function JobTrackerScreen() {
   return (
     <>
     <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: Math.max(insets.top - 30, 5) }]}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top - 12, 23) }]}>
           {isSelectionMode ? (
             <>
               <View style={styles.selectionHeader}>
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 37, // 1/4 inch lower (~18px down from 55)
+    bottom: 25, // Adjusted up from previous position
     right: 20,
     backgroundColor: COLORS.primary,
     width: 56,

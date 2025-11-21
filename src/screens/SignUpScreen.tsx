@@ -274,7 +274,7 @@ export default function SignUpScreen({ navigation }: any) {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={[styles.header, { paddingTop: Math.max(insets.top - 30, 5) }]}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top - 12, 23) }]}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Step {currentStep} of 4</Text>
             <View style={styles.progressBar}>

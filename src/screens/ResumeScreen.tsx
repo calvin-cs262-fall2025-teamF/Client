@@ -238,17 +238,18 @@ export default function ResumeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top - 2, 28) }]}>
+        <Text style={styles.title}>Resume Manager</Text>
+        <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 60 }}
       >
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: Math.max(insets.top - 30, 5) }]}>
-          <Text style={styles.title}>Resume Manager</Text>
-          <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
-        </View>
 
         {/* Primary Resume Section */}
         {primaryResume && (

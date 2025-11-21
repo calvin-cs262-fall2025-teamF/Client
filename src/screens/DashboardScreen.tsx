@@ -99,8 +99,8 @@ export default function DashboardScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      {/* Header with proper positioning */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top - 20, 10) }]}>
+      {/* Header with improved positioning - 1/4 inch lower */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top - 2, 28) }]}>
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>Welcome back, {currentUser?.name}!</Text>
@@ -113,10 +113,10 @@ export default function DashboardScreen({ navigation }: any) {
         </View>
       </View>
 
-      {/* Scroll area gets extra bottom padding so content clears the tab bar */}
+      {/* Scroll area with improved bottom spacing */}
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 75 }} // ~75 = tab bar height + spacing
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 60 }} // Reduced from 75 to 60
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.statsGrid}>
