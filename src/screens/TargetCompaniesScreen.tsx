@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import { targetCompanies } from '../data/companiesData';
@@ -21,6 +22,7 @@ import DropdownSelector from '../components/DropdownSelector';
 import COLORS from '../constants/colors';
 
 export default function TargetCompaniesScreen() {
+  const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const { targetCompanies: userTargetCompanies } = useSelector((state: RootState) => state.userTargetCompanies);
   const [selectedCompany, setSelectedCompany] = useState<CompanyRecommendation | null>(null);
@@ -273,7 +275,7 @@ export default function TargetCompaniesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top - 20, 10) }]}>
         <Text style={styles.title}>Target Companies</Text>
 
         {/* Header info */}
@@ -448,16 +450,19 @@ const getLevelTextStyle = (level: string) => {
 };
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: '#f9fafb'
+  },
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: 'white',
-    paddingTop: 20,
+    backgroundColor: '#f9fafb',
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingBottom: 0,
+    borderBottomWidth: 0,
   },
   title: {
     fontSize: 24,
@@ -892,7 +897,7 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 37, // 1/4 inch lower (~18px down from 55)
     right: 20,
     width: 56,
     height: 56,

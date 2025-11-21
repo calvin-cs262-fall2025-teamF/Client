@@ -262,20 +262,19 @@ export default function SignUpScreen({ navigation }: any) {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.select({ ios: 'padding', android: 'height' })}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : insets.top}
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.select({ ios: 'padding', android: 'height' })}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : insets.top}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + 24,
+        }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + 24,
-          }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top - 30, 5) }]}>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Step {currentStep} of 4</Text>
             <View style={styles.progressBar}>
@@ -309,8 +308,7 @@ export default function SignUpScreen({ navigation }: any) {
             <Text style={styles.loginLinkText}>Already have an account? Sign In</Text>
           </TouchableOpacity>
         </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -324,10 +322,10 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    padding: 20,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingHorizontal: 20,
+    paddingBottom: 0,
+    backgroundColor: '#f9fafb',
+    borderBottomWidth: 0,
   },
   title: {
     fontSize: 28,

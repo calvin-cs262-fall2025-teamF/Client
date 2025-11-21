@@ -24,6 +24,7 @@ export interface Application {
   status: ApplicationStatus;
   appliedDate: string;
   notes?: string;
+  jobLink?: string;
   companyLogo?: string;
 }
 

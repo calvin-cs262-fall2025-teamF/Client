@@ -9,6 +9,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +29,7 @@ import COLORS from '../constants/colors';
 
 export default function ResumeScreen() {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
   const { currentUser } = useSelector((state: RootState) => state.user);
   const { resumes, tailoredResumes, isProcessing } = useSelector((state: RootState) => state.resume);
 
@@ -240,9 +242,10 @@ export default function ResumeScreen() {
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 60 }}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top - 30, 5) }]}>
           <Text style={styles.title}>Resume Manager</Text>
           <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
         </View>
@@ -433,13 +436,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
-    paddingBottom: 97, // Account for floating tab bar (65px height + 16px bottom margin + 16px extra space)
   },
   header: {
-    padding: 20,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingHorizontal: 20,
+    paddingBottom: 0,
+    backgroundColor: '#f9fafb',
+    borderBottomWidth: 0,
   },
   title: {
     fontSize: 24,
