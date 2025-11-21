@@ -30,62 +30,136 @@ export default function TargetCompaniesScreen() {
   const [activeTab, setActiveTab] = useState<'timeline' | 'events' | 'courses' | 'checklist'>('timeline');
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
+  const [isAddingCompany, setIsAddingCompany] = useState(false);
+  const [selectedCompaniesToAdd, setSelectedCompaniesToAdd] = useState<string[]>([]);
 
-  // Get user's target company IDs
-  const userTargetCompanyIds = userTargetCompanies.map(tc => tc.companyId);
+  // Get user's target company IDs with safety checks
+  const userTargetCompanyIds = React.useMemo(() => {
+    if (!Array.isArray(userTargetCompanies)) return [];
+    return userTargetCompanies
+      .filter(tc => tc && typeof tc.companyId === 'string')
+      .map(tc => tc.companyId);
+  }, [userTargetCompanies]);
 
-  // Filter companies based on user's targets
-  const myTargetCompanies = targetCompanies.filter(company =>
-    userTargetCompanyIds.includes(company.id)
-  );
+  // Filter companies based on user's targets with safety checks
+  const myTargetCompanies = React.useMemo(() => {
+    if (!Array.isArray(targetCompanies)) return [];
+    return targetCompanies.filter(company =>
+      company &&
+      company.id &&
+      userTargetCompanyIds.includes(company.id)
+    );
+  }, [targetCompanies, userTargetCompanyIds]);
 
-  // Get available companies for the dropdown
-  const availableCompanies = targetCompanies.filter(company =>
-    !userTargetCompanyIds.includes(company.id)
-  );
-  const companyOptions = availableCompanies.map(company => company.name).concat(['Other']);
+  // Get available companies for the dropdown with safety checks
+  const availableCompanies = React.useMemo(() => {
+    if (!Array.isArray(targetCompanies)) return [];
+    return targetCompanies.filter(company =>
+      company &&
+      company.id &&
+      !userTargetCompanyIds.includes(company.id)
+    );
+  }, [targetCompanies, userTargetCompanyIds]);
 
-  const handleToggleTarget = (companyId: string) => {
-    if (userTargetCompanyIds.includes(companyId)) {
-      dispatch(removeTargetCompany(companyId));
-    } else {
-      dispatch(addTargetCompany({ companyId }));
-    }
-  };
+  const companyOptions = React.useMemo(() => {
+    if (!Array.isArray(availableCompanies)) return ['Other'];
+    return availableCompanies
+      .filter(company => company && company.name)
+      .map(company => company.name)
+      .concat(['Other']);
+  }, [availableCompanies]);
 
-  const handleAddCompany = (selectedCompanies: string | string[]) => {
-    const companies = Array.isArray(selectedCompanies) ? selectedCompanies : [selectedCompanies];
-
-    companies.forEach(companyName => {
-      if (companyName === 'Other') {
-        // Handle custom company input
+  const handleToggleTarget = React.useCallback(async (companyId: string) => {
+    try {
+      // Validate companyId
+      if (!companyId || typeof companyId !== 'string') {
+        console.error('Invalid companyId:', companyId);
         return;
       }
 
-      // Find the company in our target companies list
-      const company = targetCompanies.find(c => c.name === companyName);
-      if (company && !userTargetCompanyIds.includes(company.id)) {
-        dispatch(addTargetCompany({ companyId: company.id }));
+      if (userTargetCompanyIds.includes(companyId)) {
+        dispatch(removeTargetCompany(companyId));
+      } else {
+        dispatch(addTargetCompany({ companyId }));
       }
-    });
 
-    setShowAddCompanyModal(false);
-  };
-
-  const handleAddCustomCompany = () => {
-    if (!newCompanyName.trim()) {
-      Alert.alert('Error', 'Please enter a company name');
-      return;
+      // Small delay to allow state to update properly
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (error) {
+      console.error('Error toggling target company:', error);
+      Alert.alert('Error', 'Failed to update target company. Please try again.');
     }
+  }, [userTargetCompanyIds, dispatch]);
 
-    // For now, we'll just show an alert since custom companies need more complex handling
-    Alert.alert('Custom Company', `"${newCompanyName}" will be added to your target list. This feature will be enhanced in a future update.`);
-    setNewCompanyName('');
-    setShowAddCompanyModal(false);
+  const handleSelectionChange = (selectedCompanies: string | string[]) => {
+    const companies = Array.isArray(selectedCompanies) ? selectedCompanies : [selectedCompanies];
+    setSelectedCompaniesToAdd(companies.filter(c => c !== 'Other'));
   };
 
-  const renderMyTargetsSection = () => {
-    if (myTargetCompanies.length === 0) {
+  const handleConfirmAddCompanies = async () => {
+    // Prevent multiple simultaneous operations
+    if (isAddingCompany) return;
+
+    try {
+      setIsAddingCompany(true);
+
+      // Validate input
+      if (!selectedCompaniesToAdd || selectedCompaniesToAdd.length === 0) {
+        Alert.alert('Info', 'Please select at least one company to add.');
+        return;
+      }
+
+      // Process companies sequentially to avoid race conditions
+      for (const companyName of selectedCompaniesToAdd) {
+        // Find the company in our target companies list with safety checks
+        const company = Array.isArray(targetCompanies)
+          ? targetCompanies.find(c => c && c.name && c.id && c.name === companyName)
+          : null;
+
+        if (company &&
+            company.id &&
+            !userTargetCompanyIds.includes(company.id)) {
+          // Dispatch action and wait for it to complete
+          dispatch(addTargetCompany({ companyId: company.id }));
+          // Small delay to prevent overwhelming the state management
+          await new Promise(resolve => setTimeout(resolve, 150));
+        }
+      }
+
+      // Reset selection and close modal
+      setSelectedCompaniesToAdd([]);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setShowAddCompanyModal(false);
+    } catch (error) {
+      console.error('Error adding companies:', error);
+      Alert.alert('Error', 'Failed to add companies. Please try again.');
+    } finally {
+      setIsAddingCompany(false);
+    }
+  };
+
+  const handleAddCustomCompany = async () => {
+    try {
+      if (!newCompanyName.trim()) {
+        Alert.alert('Error', 'Please enter a company name');
+        return;
+      }
+
+      // For now, we'll just show an alert since custom companies need more complex handling
+      Alert.alert('Custom Company', `"${newCompanyName}" will be added to your target list. This feature will be enhanced in a future update.`);
+
+      // Clear form and close modal safely
+      setNewCompanyName('');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      setShowAddCompanyModal(false);
+    } catch (error) {
+      console.error('Error adding custom company:', error);
+      Alert.alert('Error', 'Failed to add custom company. Please try again.');
+    }
+  };
+
+  const renderMyTargetsSection = React.useCallback(() => {
+    if (!Array.isArray(myTargetCompanies) || myTargetCompanies.length === 0) {
       return (
         <View style={styles.emptyState}>
           <Ionicons name="star-outline" size={64} color="#9ca3af" />
@@ -105,20 +179,22 @@ export default function TargetCompaniesScreen() {
 
     return (
       <ScrollView style={styles.companiesList}>
-        {myTargetCompanies.map((company) => (
-          <CompanyTargetCard
-            key={company.id}
-            company={company}
-            selectedRole={selectedRole}
-            isTargeted={true}
-            onPress={() => setSelectedCompany(company)}
-            onToggleTarget={() => handleToggleTarget(company.id)}
-            showAddButton={false}
-          />
-        ))}
+        {myTargetCompanies
+          .filter(company => company && company.id) // Extra safety filter
+          .map((company) => (
+            <CompanyTargetCard
+              key={company.id}
+              company={company}
+              selectedRole={selectedRole}
+              isTargeted={true}
+              onPress={() => setSelectedCompany(company)}
+              onToggleTarget={() => handleToggleTarget(company.id)}
+              showAddButton={false}
+            />
+          ))}
       </ScrollView>
     );
-  };
+  }, [myTargetCompanies, selectedRole, handleToggleTarget]);
 
 
   const renderCompanyDetails = () => {
@@ -357,7 +433,9 @@ export default function TargetCompaniesScreen() {
       {/* Floating Add Button */}
       <TouchableOpacity
         style={styles.floatingButton}
-        onPress={() => setShowAddCompanyModal(true)}
+        onPress={() => !isAddingCompany && setShowAddCompanyModal(true)}
+        disabled={isAddingCompany}
+        activeOpacity={isAddingCompany ? 0.3 : 0.7}
       >
         <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
@@ -370,8 +448,17 @@ export default function TargetCompaniesScreen() {
       >
         <View style={styles.addCompanyModalContainer}>
           <View style={styles.addCompanyModalHeader}>
-            <TouchableOpacity onPress={() => setShowAddCompanyModal(false)}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            <TouchableOpacity
+              onPress={() => {
+                if (!isAddingCompany) {
+                  setSelectedCompaniesToAdd([]);
+                  setNewCompanyName('');
+                  setShowAddCompanyModal(false);
+                }
+              }}
+              disabled={isAddingCompany}
+            >
+              <Text style={[styles.cancelButtonText, isAddingCompany && styles.disabledButtonText]}>Cancel</Text>
             </TouchableOpacity>
             <Text style={styles.addCompanyModalTitle}>Add Target Company</Text>
             <View style={styles.placeholder} />
@@ -381,28 +468,49 @@ export default function TargetCompaniesScreen() {
             <DropdownSelector
               label="Select Companies"
               options={companyOptions}
-              value={[]}
-              onValueChange={handleAddCompany}
-              placeholder="Choose companies to add"
+              value={selectedCompaniesToAdd}
+              onValueChange={handleSelectionChange}
+              placeholder={isAddingCompany ? "Adding..." : "Choose companies to add"}
               multiSelect={true}
-              allowOther={true}
+              allowOther={false}
             />
+
+            {selectedCompaniesToAdd.length > 0 && (
+              <TouchableOpacity
+                style={[styles.confirmAddButton, isAddingCompany && styles.disabledButton]}
+                onPress={handleConfirmAddCompanies}
+                disabled={isAddingCompany}
+              >
+                <Text style={[styles.confirmAddButtonText, isAddingCompany && styles.disabledButtonText]}>
+                  {isAddingCompany ? 'Adding...' : `Add ${selectedCompaniesToAdd.length} Compan${selectedCompaniesToAdd.length === 1 ? 'y' : 'ies'}`}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <Text style={styles.orText}>or</Text>
 
             <Text style={styles.customCompanyLabel}>Add Custom Company</Text>
             <TextInput
-              style={styles.customCompanyInput}
+              style={[styles.customCompanyInput, isAddingCompany && styles.disabledInput]}
               value={newCompanyName}
               onChangeText={setNewCompanyName}
               placeholder="Enter company name"
+              editable={!isAddingCompany}
             />
             <TouchableOpacity
-              style={[styles.addCustomButton, !newCompanyName.trim() && styles.disabledButton]}
+              style={[
+                styles.addCustomButton,
+                (!newCompanyName.trim() || isAddingCompany) && styles.disabledButton
+              ]}
               onPress={handleAddCustomCompany}
-              disabled={!newCompanyName.trim()}
+              disabled={!newCompanyName.trim() || isAddingCompany}
             >
-              <Text style={[styles.addCustomButtonText, !newCompanyName.trim() && styles.disabledButtonText]}>Add Custom Company</Text>
+              <Text style={[
+                styles.addCustomButtonText,
+                (!newCompanyName.trim() || isAddingCompany) && styles.disabledButtonText
+              ]}>
+                {isAddingCompany ? 'Adding...' : 'Add Custom Company'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -979,5 +1087,22 @@ const styles = StyleSheet.create({
   },
   disabledButtonText: {
     color: '#9ca3af',
+  },
+  disabledInput: {
+    backgroundColor: '#f3f4f6',
+    color: '#9ca3af',
+  },
+  confirmAddButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  confirmAddButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
