@@ -98,9 +98,9 @@ export default function DashboardScreen({ navigation }: any) {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['left','right']}>
-      {/* Header sits below the notch thanks to paddingTop using insets.top */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
+      {/* Header with proper positioning */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top - 20, 10) }]}>
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>Welcome back, {currentUser?.name}!</Text>
@@ -244,7 +244,7 @@ export default function DashboardScreen({ navigation }: any) {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -290,10 +290,9 @@ const styles = StyleSheet.create({
 
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 8,
-    backgroundColor: 'white',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e5e7eb',
+    paddingBottom: 0,
+    backgroundColor: '#f9fafb',
+    borderBottomWidth: 0,
     zIndex: 1,
   },
   headerContent: {

@@ -17,7 +17,6 @@ import { CompanyRecommendation, RoleType, ChecklistItem } from '../types';
 import { CompanyTargetCard } from '../components/CompanyTargetCard';
 import { RootState } from '../store';
 import { addTargetCompany, removeTargetCompany } from '../store/userTargetCompaniesSlice';
-import { toggleChecklistItem } from '../store/checklistSlice';
 import { format } from 'date-fns';
 import DropdownSelector from '../components/DropdownSelector';
 import COLORS from '../constants/colors';
@@ -26,7 +25,6 @@ export default function TargetCompaniesScreen() {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const { targetCompanies: userTargetCompanies } = useSelector((state: RootState) => state.userTargetCompanies);
-  const checklistProgress = useSelector((state: RootState) => state.checklist.progress);
   const [selectedCompany, setSelectedCompany] = useState<CompanyRecommendation | null>(null);
   const [selectedRole, setSelectedRole] = useState<RoleType>('Full-time');
   const [activeTab, setActiveTab] = useState<'timeline' | 'events' | 'courses' | 'checklist'>('timeline');
@@ -86,14 +84,6 @@ export default function TargetCompaniesScreen() {
     setShowAddCompanyModal(false);
   };
 
-  const handleToggleChecklistItem = (companyId: string, itemId: string) => {
-    dispatch(toggleChecklistItem({ companyId, itemId }));
-  };
-
-  const getChecklistItemStatus = (companyId: string, itemId: string): boolean => {
-    return checklistProgress[companyId]?.[itemId] || false;
-  };
-
   const renderMyTargetsSection = () => {
     if (myTargetCompanies.length === 0) {
       return (
@@ -114,10 +104,7 @@ export default function TargetCompaniesScreen() {
     }
 
     return (
-      <ScrollView 
-        style={styles.companiesList}
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 75 }}
-      >
+      <ScrollView style={styles.companiesList}>
         {myTargetCompanies.map((company) => (
           <CompanyTargetCard
             key={company.id}
@@ -260,30 +247,21 @@ export default function TargetCompaniesScreen() {
               return (
                 <View key={category} style={styles.checklistCategory}>
                   <Text style={styles.categoryTitle}>{category}</Text>
-                  {items.map((item) => {
-                    const isCompleted = getChecklistItemStatus(selectedCompany.id, item.id);
-                    return (
-                      <View key={item.id} style={styles.checklistItem}>
-                        <TouchableOpacity
-                          style={[styles.checkbox, isCompleted && styles.completedCheckbox]}
-                          onPress={() => handleToggleChecklistItem(selectedCompany.id, item.id)}
-                        >
-                          {isCompleted && (
-                            <Ionicons name="checkmark" size={16} color="#059669" />
-                          )}
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.checklistContent}
-                          onPress={() => handleToggleChecklistItem(selectedCompany.id, item.id)}
-                        >
-                          <Text style={[styles.checklistTitle, isCompleted && styles.completedTitle]}>
-                            {item.title}
-                          </Text>
-                          <Text style={styles.checklistDescription}>{item.description}</Text>
-                        </TouchableOpacity>
+                  {items.map((item) => (
+                    <View key={item.id} style={styles.checklistItem}>
+                      <TouchableOpacity style={styles.checkbox}>
+                        {item.completed && (
+                          <Ionicons name="checkmark" size={16} color="#059669" />
+                        )}
+                      </TouchableOpacity>
+                      <View style={styles.checklistContent}>
+                        <Text style={[styles.checklistTitle, item.completed && styles.completedTitle]}>
+                          {item.title}
+                        </Text>
+                        <Text style={styles.checklistDescription}>{item.description}</Text>
                       </View>
-                    );
-                  })}
+                    </View>
+                  ))}
                 </View>
               );
             })}
@@ -296,10 +274,9 @@ export default function TargetCompaniesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['left','right']}>
-      <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: insets.top }]}>
-          <Text style={styles.title}>Target Companies</Text>
+    <View style={styles.container}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top - 20, 10) }]}>
+        <Text style={styles.title}>Target Companies</Text>
 
         {/* Header info */}
         <View style={styles.headerInfo}>
@@ -430,8 +407,7 @@ export default function TargetCompaniesScreen() {
           </View>
         </View>
       </Modal>
-      </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -474,17 +450,19 @@ const getLevelTextStyle = (level: string) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#f9fafb' },
+  safe: {
+    flex: 1,
+    backgroundColor: '#f9fafb'
+  },
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#f9fafb',
     paddingHorizontal: 20,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingBottom: 0,
+    borderBottomWidth: 0,
   },
   title: {
     fontSize: 24,
@@ -899,10 +877,6 @@ const styles = StyleSheet.create({
     marginRight: 12,
     marginTop: 2,
   },
-  completedCheckbox: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#059669',
-  },
   checklistContent: {
     flex: 1,
   },
@@ -923,7 +897,7 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 37, // 1/4 inch lower (~18px down from 55)
     right: 20,
     width: 56,
     height: 56,

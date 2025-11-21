@@ -1,5 +1,6 @@
 // appnavigator.tsx
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -54,23 +55,16 @@ function MainTabs() {
           fontSize: 12,
           fontWeight: '500',
         },
-        // Floating tab bar lifted from the very bottom
+        // Tab bar flush to bottom
         tabBarStyle: {
-          position: 'absolute',
-          bottom: 8,
-          left: 16,
-          right: 16,
-          height: 65,
-          paddingTop: 6,
-          paddingBottom: 10,   // space above iPhone home indicator
+          height: 50,
+          paddingTop: 0,
+          paddingBottom: 0,
           backgroundColor: 'white',
-          borderRadius: 16,
-          borderTopWidth: 0,
-          elevation: 5,        // Android shadow
-          shadowColor: '#000', // iOS shadow
-          shadowOpacity: 0.05,
-          shadowOffset: { width: 0, height: 2 },
-          shadowRadius: 8,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: '#e5e7eb',
+          elevation: 0,
+          shadowOpacity: 0,
         },
       })}
     >
