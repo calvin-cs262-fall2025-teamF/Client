@@ -95,7 +95,7 @@ function MainTabs() {
 export default function AppNavigator() {
   const { isAuthenticated } = useSelector((state: RootState) => state.user);
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['left', 'right']}>
       <NavigationContainer>
         {isAuthenticated ? <MainTabs /> : <AuthStack />}
       </NavigationContainer>

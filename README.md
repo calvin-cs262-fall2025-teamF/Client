@@ -99,3 +99,8 @@ src/
 - State management with Redux Toolkit
 
 - Synced by @kbaah on 20251025
+
+
+## Related Repositories
+- [Project](https://github.com/calvin-cs262-fall2025-teamF/Project)
+- [Poros Data Service](https://github.com/calvin-cs262-fall2025-teamF/poros_data_service)

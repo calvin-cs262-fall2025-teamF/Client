@@ -116,7 +116,7 @@ export default function DashboardScreen({ navigation }: any) {
       {/* Scroll area gets extra bottom padding so content clears the tab bar */}
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 88 }} // ~88 = tab bar height
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 4) + 75 }} // ~75 = tab bar height + spacing
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.statsGrid}>
