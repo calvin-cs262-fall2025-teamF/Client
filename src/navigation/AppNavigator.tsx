@@ -55,11 +55,11 @@ function MainTabs() {
           fontSize: 12,
           fontWeight: '500',
         },
-        // Tab bar flush to bottom
+        // Tab bar with proper bottom spacing
         tabBarStyle: {
-          height: 50,
-          paddingTop: 0,
-          paddingBottom: 0,
+          height: 65,
+          paddingTop: 6,
+          paddingBottom: 12,
           backgroundColor: 'white',
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: '#e5e7eb',

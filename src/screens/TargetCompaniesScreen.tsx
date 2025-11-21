@@ -351,7 +351,7 @@ export default function TargetCompaniesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top - 20, 10) }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top - 2, 28) }]}>
         <Text style={styles.title}>Target Companies</Text>
 
         {/* Header info */}
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     position: 'absolute',
-    bottom: 37, // 1/4 inch lower (~18px down from 55)
+    bottom: 25, // Adjusted up from previous position
     right: 20,
     width: 56,
     height: 56,
