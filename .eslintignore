@@ -1,0 +1,9 @@
+# Node dependencies
+node_modules/
+
+# Expo / build outputs
+.expo/
+**/.expo/**
+dist/
+build/
+web-build/
