@@ -14,6 +14,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { format } from 'date-fns';
 import {
   addResume,
@@ -64,11 +65,25 @@ export default function ResumeScreen() {
           return;
         }
 
+        // Create resumes directory if it doesn't exist
+        const resumesDir = `${FileSystem.documentDirectory}resumes/`;
+        const dirInfo = await FileSystem.getInfoAsync(resumesDir);
+        if (!dirInfo.exists) {
+          await FileSystem.makeDirectoryAsync(resumesDir, { intermediates: true });
+        }
+
+        // Copy file to permanent location
+        const permanentUri = `${resumesDir}${Date.now()}_${file.name}`;
+        await FileSystem.copyAsync({
+          from: file.uri,
+          to: permanentUri,
+        });
+
         const newResume: Resume = {
           id: Date.now().toString(),
           name: file.name.replace('.pdf', ''),
           fileName: file.name,
-          fileUri: file.uri,
+          fileUri: permanentUri, // Use permanent URI instead of temp
           uploadedAt: new Date().toISOString(),
           isPrimary: resumes.length === 0, // First resume becomes primary
           tailoredVersions: [],
@@ -83,7 +98,7 @@ export default function ResumeScreen() {
     }
   };
 
-  const handleDeleteResume = (resumeId: string) => {
+  const handleDeleteResume = async (resumeId: string) => {
     const resume = resumes.find(r => r.id === resumeId);
     if (!resume) return;
 
@@ -95,7 +110,20 @@ export default function ResumeScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => dispatch(deleteResume(resumeId)),
+          onPress: async () => {
+            // Delete the physical file
+            try {
+              const fileInfo = await FileSystem.getInfoAsync(resume.fileUri);
+              if (fileInfo.exists) {
+                await FileSystem.deleteAsync(resume.fileUri);
+              }
+            } catch (error) {
+              console.error('Error deleting file:', error);
+            }
+
+            // Delete from Redux
+            dispatch(deleteResume(resumeId));
+          },
         },
       ]
     );
@@ -126,7 +154,7 @@ export default function ResumeScreen() {
 
   const handleStartTailoring = () => {
     if (!tailoringForm.selectedResumeId || !tailoringForm.companyName.trim() ||
-        !tailoringForm.positionTitle.trim() || !tailoringForm.jobDescription.trim()) {
+      !tailoringForm.positionTitle.trim() || !tailoringForm.jobDescription.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -139,7 +167,11 @@ export default function ResumeScreen() {
     }));
 
     setShowTailoringModal(false);
-    setShowProcessingModal(true);
+    // Add a small delay to allow the first modal to close completely before opening the next one
+    // This prevents issues on iOS where the second modal might not appear
+    setTimeout(() => {
+      setShowProcessingModal(true);
+    }, 500);
   };
 
   const handleTailoringComplete = () => {
@@ -428,6 +460,9 @@ export default function ResumeScreen() {
         onComplete={handleTailoringComplete}
         companyName={tailoringForm.companyName}
         positionTitle={tailoringForm.positionTitle}
+        jobDescription={tailoringForm.jobDescription}
+        resumeUri={resumes.find(r => r.id === tailoringForm.selectedResumeId)?.fileUri || ''}
+        onClose={() => setShowProcessingModal(false)}
       />
     </View>
   );
