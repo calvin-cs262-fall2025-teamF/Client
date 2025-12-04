@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,22 @@ import {
   Modal,
   ActivityIndicator,
   Animated,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Sharing from 'expo-sharing';
 import COLORS from '../constants/colors';
+import { tailorResume } from '../services/aiService';
+import { createPdfFromHtml } from '../services/pdfService';
 
 interface ResumeTailoringProcessorProps {
   visible: boolean;
   onComplete: () => void;
   companyName: string;
   positionTitle: string;
+  jobDescription: string;
+  resumeUri: string;
+  onClose: () => void;
 }
 
 export default function ResumeTailoringProcessor({
@@ -22,177 +29,211 @@ export default function ResumeTailoringProcessor({
   onComplete,
   companyName,
   positionTitle,
+  jobDescription,
+  resumeUri,
+  onClose,
 }: ResumeTailoringProcessorProps) {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const fadeAnim = new Animated.Value(0);
-  const scaleAnim = new Animated.Value(0.8);
+  const [error, setError] = useState<string | null>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   const steps = [
-    'Analyzing job description...',
-    'Matching skills and keywords...',
-    'Optimizing resume content...',
-    'Finalizing tailored resume...',
+    'Analyzing resume and job description...',
+    'Generating tailored content with Claude...',
+    'Creating PDF document...',
+    'Finalizing...',
   ];
 
   useEffect(() => {
     if (visible) {
-      // Reset animations
-      setProgress(0);
-      setCurrentStep(0);
-      fadeAnim.setValue(0);
-      scaleAnim.setValue(0.8);
+      startTailoringProcess();
+    }
+  }, [visible]);
 
-      // Start entrance animation
+  const startTailoringProcess = async () => {
+    // Reset state
+    setProgress(0);
+    setCurrentStep(0);
+    setError(null);
+    fadeAnim.setValue(0);
+    scaleAnim.setValue(0.8);
+
+    // Start entrance animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    try {
+      // Step 1: Analysis (Simulated quick start)
+      setCurrentStep(0);
+      setProgress(10);
+      await new Promise(resolve => setTimeout(resolve, 800)); // Delay to show step
+
+      // Step 2: AI Generation
+      setCurrentStep(1);
+      setProgress(30);
+
+      const htmlContent = await tailorResume(resumeUri, {
+        companyName,
+        positionTitle,
+        jobDescription,
+      });
+
+      setProgress(70);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Delay to show progress
+
+      // Step 3: PDF Creation
+      setCurrentStep(2);
+      const pdfUri = await createPdfFromHtml(htmlContent);
+
+      setProgress(90);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Delay to show progress
+
+      // Step 4: Finalizing & Sharing
+      setCurrentStep(3);
+      setProgress(100);
+
+      // Delay to show 100% completion
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(pdfUri, {
+          UTI: '.pdf',
+          mimeType: 'application/pdf',
+          dialogTitle: `Tailored Resume - ${companyName}`,
+        });
+      } else {
+        Alert.alert('Success', 'PDF generated but sharing is not available on this device.');
+      }
+
+      // Close animation
       Animated.parallel([
         Animated.timing(fadeAnim, {
-          toValue: 1,
+          toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
-          toValue: 1,
+          toValue: 0.8,
           duration: 300,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start(() => {
+        onComplete();
+      });
 
-      // Progress simulation
-      const totalTime = 3000; // 3 seconds
-      const stepTime = totalTime / steps.length;
-
-      let currentProgress = 0;
-      let stepIndex = 0;
-
-      const progressInterval = setInterval(() => {
-        currentProgress += 1;
-        setProgress(currentProgress);
-
-        // Update step every 25% progress
-        const newStepIndex = Math.floor((currentProgress / 100) * steps.length);
-        if (newStepIndex !== stepIndex && newStepIndex < steps.length) {
-          stepIndex = newStepIndex;
-          setCurrentStep(stepIndex);
-        }
-
-        if (currentProgress >= 100) {
-          clearInterval(progressInterval);
-
-          // Small delay before completion
-          setTimeout(() => {
-            // Exit animation
-            Animated.parallel([
-              Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-              Animated.timing(scaleAnim, {
-                toValue: 0.8,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-            ]).start(() => {
-              onComplete();
-            });
-          }, 500);
-        }
-      }, totalTime / 100);
-
-      return () => {
-        clearInterval(progressInterval);
-      };
+    } catch (err) {
+      console.error('Tailoring failed:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      Alert.alert(
+        'Tailoring Failed',
+        'There was an error tailoring your resume. Please check your API key and internet connection.',
+        [{ text: 'Close', onPress: onClose }]
+      );
     }
-  }, [visible, onComplete, fadeAnim, scaleAnim]);
+  };
 
   if (!visible) return null;
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-    >
-      <View style={styles.overlay}>
-        <Animated.View
-          style={[
-            styles.container,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }],
-            },
-          ]}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="document-text" size={32} color={COLORS.primary} />
-            </View>
-            <Text style={styles.title}>Tailoring Resume</Text>
-            <Text style={styles.subtitle}>
-              Customizing for {positionTitle} at {companyName}
-            </Text>
+    <View style={[styles.overlay, StyleSheet.absoluteFillObject]}>
+      <Animated.View
+        style={[
+          styles.container,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={[styles.iconContainer, error ? styles.errorIcon : null]}>
+            <Ionicons
+              name={error ? "alert-circle" : "document-text"}
+              size={32}
+              color={error ? "#dc2626" : COLORS.primary}
+            />
           </View>
+          <Text style={styles.title}>{error ? 'Failed' : 'Tailoring Resume'}</Text>
+          <Text style={styles.subtitle}>
+            {error ? 'Please try again later' : `Customizing for ${positionTitle} at ${companyName}`}
+          </Text>
+        </View>
 
-          {/* Progress Section */}
-          <View style={styles.progressSection}>
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBackground}>
-                <View
-                  style={[
-                    styles.progressBar,
-                    { width: `${progress}%` },
-                  ]}
-                />
-              </View>
-              <Text style={styles.progressText}>{Math.round(progress)}%</Text>
-            </View>
-
-            {/* Current Step */}
-            <View style={styles.stepContainer}>
-              <ActivityIndicator size="small" color={COLORS.primary} />
-              <Text style={styles.stepText}>
-                {steps[currentStep] || 'Processing...'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Steps Indicator */}
-          <View style={styles.stepsIndicator}>
-            {steps.map((step, index) => (
-              <View key={index} style={styles.stepIndicatorContainer}>
-                <View
-                  style={[
-                    styles.stepIndicator,
-                    {
-                      backgroundColor: index <= currentStep ? COLORS.primary : '#e5e7eb',
-                    },
-                  ]}
-                >
-                  {index < currentStep ? (
-                    <Ionicons name="checkmark" size={12} color="white" />
-                  ) : index === currentStep ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    <Text style={styles.stepNumber}>{index + 1}</Text>
-                  )}
+        {!error && (
+          <>
+            {/* Progress Section */}
+            <View style={styles.progressSection}>
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBackground}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      { width: `${progress}%` },
+                    ]}
+                  />
                 </View>
-                <Text
-                  style={[
-                    styles.stepLabel,
-                    {
-                      color: index <= currentStep ? '#374151' : '#9ca3af',
-                    },
-                  ]}
-                >
-                  {step.replace('...', '')}
+                <Text style={styles.progressText}>{Math.round(progress)}%</Text>
+              </View>
+
+              {/* Current Step */}
+              <View style={styles.stepContainer}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+                <Text style={styles.stepText}>
+                  {steps[currentStep] || 'Processing...'}
                 </Text>
               </View>
-            ))}
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
+            </View>
+
+            {/* Steps Indicator */}
+            <View style={styles.stepsIndicator}>
+              {steps.map((step, index) => (
+                <View key={index} style={styles.stepIndicatorContainer}>
+                  <View
+                    style={[
+                      styles.stepIndicator,
+                      {
+                        backgroundColor: index <= currentStep ? COLORS.primary : '#e5e7eb',
+                      },
+                    ]}
+                  >
+                    {index < currentStep ? (
+                      <Ionicons name="checkmark" size={12} color="white" />
+                    ) : index === currentStep ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <Text style={styles.stepNumber}>{index + 1}</Text>
+                    )}
+                  </View>
+                  <Text
+                    style={[
+                      styles.stepLabel,
+                      {
+                        color: index <= currentStep ? '#374151' : '#9ca3af',
+                      },
+                    ]}
+                  >
+                    {step.replace('...', '')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
+      </Animated.View>
+    </View>
   );
 }
 
@@ -203,6 +244,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    zIndex: 9999,
+    elevation: 9999,
   },
   container: {
     backgroundColor: 'white',
@@ -231,6 +274,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  errorIcon: {
+    backgroundColor: '#fee2e2',
   },
   title: {
     fontSize: 20,
