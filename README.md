@@ -95,10 +95,7 @@ src/
 - Job tracking dashboard
 - Resume tailoring functionality
 - Company targeting system
-- Navigation with bottom tabs
-- State management with Redux Toolkit
 
-- Synced by @kbaah on 20251025
 
 
 ## Related Repositories
