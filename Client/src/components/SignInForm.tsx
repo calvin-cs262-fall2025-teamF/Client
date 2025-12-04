@@ -40,8 +40,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onToggleForm }) => {
       // Here you would typically make an API call to your backend
       alert('Sign in functionality will be implemented with backend integration');
     } catch (err) {
-      setError('An error occurred during sign in');
-    } finally {
+      console.error('An error occurred signing in:', err);
       setIsLoading(false);
     }
   };
@@ -81,7 +80,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ onToggleForm }) => {
       </button>
 
       <div className="toggle-form">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{" "}
         <button type="button" onClick={onToggleForm}>
           Sign up
         </button>
