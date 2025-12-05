@@ -8,30 +8,33 @@ import {
   Alert,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUser } from '../store/userSlice';
 import { User } from '../types';
 import COLORS from '../constants/colors';
+import apiService from '../services/apiService';
 
 export default function LoginScreen({ navigation }: any) {
   const dispatch = useDispatch();
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!name.trim()) {
-      Alert.alert('Error', 'Please enter your name');
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter your email and password');
       return;
     }
 
     setIsLoading(true);
     try {
-      const userData = await AsyncStorage.getItem(`user_${name.toLowerCase()}`);
-      if (userData) {
-        const user: User = JSON.parse(userData);
+      const apiResponse = await apiService.login(email, password);
+      
+      if (apiResponse.data) {
+        // API login successful - token is automatically stored by apiService
+        const user: User = apiResponse.data.user || apiResponse.data;
         dispatch(setUser(user));
       } else {
-        Alert.alert('User Not Found', 'No account found with this name. Please sign up first.');
+        Alert.alert('Error', apiResponse.error || 'Failed to log in. Please try again.');
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to log in. Please try again.');
@@ -47,13 +50,26 @@ export default function LoginScreen({ navigation }: any) {
         <Text style={styles.subtitle}>Sign in to your Team Fun account</Text>
 
         <View style={styles.formContainer}>
-          <Text style={styles.inputLabel}>Name</Text>
+          <Text style={styles.inputLabel}>Email</Text>
           <TextInput
             style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter your name"
-            autoCapitalize="words"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+          />
+
+          <Text style={styles.inputLabel}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="password"
           />
 
           <TouchableOpacity
