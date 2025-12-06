@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,7 +17,7 @@ import { targetCompanies } from '../data/companiesData';
 import { CompanyRecommendation, RoleType, ChecklistItem } from '../types';
 import { CompanyTargetCard } from '../components/CompanyTargetCard';
 import { RootState } from '../store';
-import { addTargetCompany, removeTargetCompany } from '../store/userTargetCompaniesSlice';
+import { addTargetCompany, removeTargetCompany, addCustomCompany, removeCustomCompany, toggleChecklistItem } from '../store/userTargetCompaniesSlice';
 import { format } from 'date-fns';
 import DropdownSelector from '../components/DropdownSelector';
 import COLORS from '../constants/colors';
@@ -24,7 +25,7 @@ import COLORS from '../constants/colors';
 export default function TargetCompaniesScreen() {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const { targetCompanies: userTargetCompanies } = useSelector((state: RootState) => state.userTargetCompanies);
+  const { targetCompanies: userTargetCompanies, customCompanies, checklistCompletions } = useSelector((state: RootState) => state.userTargetCompanies);
   const [selectedCompany, setSelectedCompany] = useState<CompanyRecommendation | null>(null);
   const [selectedRole, setSelectedRole] = useState<RoleType>('Full-time');
   const [activeTab, setActiveTab] = useState<'timeline' | 'events' | 'courses' | 'checklist'>('timeline');
@@ -41,15 +42,22 @@ export default function TargetCompaniesScreen() {
       .map(tc => tc.companyId);
   }, [userTargetCompanies]);
 
-  // Filter companies based on user's targets with safety checks
+  // Merge predefined and custom companies, then filter by user's targets
   const myTargetCompanies = React.useMemo(() => {
-    if (!Array.isArray(targetCompanies)) return [];
-    return targetCompanies.filter(company =>
-      company &&
-      company.id &&
-      userTargetCompanyIds.includes(company.id)
-    );
-  }, [targetCompanies, userTargetCompanyIds]);
+    // Get predefined companies that user has targeted
+    const predefinedTargets = Array.isArray(targetCompanies)
+      ? targetCompanies.filter(company =>
+        company &&
+        company.id &&
+        userTargetCompanyIds.includes(company.id)
+      )
+      : [];
+
+    // Add all custom companies (they're automatically targeted when created)
+    const allTargets = [...predefinedTargets, ...(customCompanies || [])];
+
+    return allTargets;
+  }, [targetCompanies, userTargetCompanyIds, customCompanies]);
 
   // Get available companies for the dropdown with safety checks
   const availableCompanies = React.useMemo(() => {
@@ -117,8 +125,8 @@ export default function TargetCompaniesScreen() {
           : null;
 
         if (company &&
-            company.id &&
-            !userTargetCompanyIds.includes(company.id)) {
+          company.id &&
+          !userTargetCompanyIds.includes(company.id)) {
           // Dispatch action and wait for it to complete
           dispatch(addTargetCompany({ companyId: company.id }));
           // Small delay to prevent overwhelming the state management
@@ -145,17 +153,55 @@ export default function TargetCompaniesScreen() {
         return;
       }
 
-      // For now, we'll just show an alert since custom companies need more complex handling
-      Alert.alert('Custom Company', `"${newCompanyName}" will be added to your target list. This feature will be enhanced in a future update.`);
+      setIsAddingCompany(true);
 
-      // Clear form and close modal safely
-      setNewCompanyName('');
-      await new Promise(resolve => setTimeout(resolve, 100));
-      setShowAddCompanyModal(false);
+      // Dispatch the async thunk to enrich and add the company
+      const result = await dispatch(addCustomCompany(newCompanyName.trim()) as any);
+
+      if (addCustomCompany.fulfilled.match(result)) {
+        // Success!
+        Alert.alert('Success', `${newCompanyName} has been added to your target companies!`);
+        setNewCompanyName('');
+        setShowAddCompanyModal(false);
+      } else if (addCustomCompany.rejected.match(result)) {
+        // Error occurred
+        Alert.alert(
+          'Error',
+          `Failed to add ${newCompanyName}. ${result.payload || 'Please try again.'}`
+        );
+      }
     } catch (error) {
       console.error('Error adding custom company:', error);
       Alert.alert('Error', 'Failed to add custom company. Please try again.');
+    } finally {
+      setIsAddingCompany(false);
     }
+  };
+
+  const handleDeleteCompany = (company: CompanyRecommendation) => {
+    Alert.alert(
+      'Remove Company',
+      `Are you sure you want to remove ${company.name} from your target companies?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            if (company.isCustom) {
+              // Remove custom company
+              dispatch(removeCustomCompany(company.id));
+            } else {
+              // Remove predefined company from targets
+              dispatch(removeTargetCompany(company.id));
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderMyTargetsSection = React.useCallback(() => {
@@ -189,6 +235,7 @@ export default function TargetCompaniesScreen() {
               isTargeted={true}
               onPress={() => setSelectedCompany(company)}
               onToggleTarget={() => handleToggleTarget(company.id)}
+              onDelete={() => handleDeleteCompany(company)}
               showAddButton={false}
             />
           ))}
@@ -255,28 +302,57 @@ export default function TargetCompaniesScreen() {
         return (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Upcoming Events & Programs</Text>
-            {selectedCompany.events.map((event) => (
-              <View key={event.id} style={styles.eventCard}>
-                <View style={styles.eventHeader}>
-                  <View style={[styles.eventTypeTag, getEventTypeStyle(event.type)]}>
-                    <Text style={[styles.eventTypeText, getEventTypeTextStyle(event.type)]}>
-                      {event.type}
+            {selectedCompany.events.length === 0 ? (
+              <View style={styles.emptyEventsState}>
+                <Ionicons name="calendar-outline" size={48} color="#9ca3af" />
+                <Text style={styles.emptyEventsTitle}>No Events Available</Text>
+                <Text style={styles.emptyEventsText}>
+                  There are no upcoming events at this time. Check back later for new opportunities!
+                </Text>
+              </View>
+            ) : (
+              selectedCompany.events.map((event) => (
+                <View key={event.id} style={styles.eventCard}>
+                  <View style={styles.eventHeader}>
+                    <View style={[styles.eventTypeTag, getEventTypeStyle(event.type)]}>
+                      <Text style={[styles.eventTypeText, getEventTypeTextStyle(event.type)]}>
+                        {event.type}
+                      </Text>
+                    </View>
+                    <Text style={styles.eventDate}>
+                      {format(new Date(event.date), 'MMM dd, yyyy')}
                     </Text>
                   </View>
-                  <Text style={styles.eventDate}>
-                    {format(new Date(event.date), 'MMM dd, yyyy')}
-                  </Text>
+                  <Text style={styles.eventTitle}>{event.title}</Text>
+                  <Text style={styles.eventDescription}>{event.description}</Text>
+                  {event.registrationLink && (
+                    <TouchableOpacity
+                      style={styles.registerButton}
+                      onPress={async () => {
+                        try {
+                          let url = event.registrationLink!;
+                          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                            url = 'https://' + url;
+                          }
+                          const canOpen = await Linking.canOpenURL(url);
+                          if (canOpen) {
+                            await Linking.openURL(url);
+                          } else {
+                            Alert.alert('Error', 'Cannot open this link.');
+                          }
+                        } catch (error) {
+                          console.error('Error opening registration link:', error);
+                          Alert.alert('Error', 'Could not open registration link.');
+                        }
+                      }}
+                    >
+                      <Text style={styles.registerButtonText}>See More</Text>
+                      <Ionicons name="open-outline" size={16} color={COLORS.primary} />
+                    </TouchableOpacity>
+                  )}
                 </View>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventDescription}>{event.description}</Text>
-                {event.registrationLink && (
-                  <TouchableOpacity style={styles.registerButton}>
-                    <Text style={styles.registerButtonText}>Register</Text>
-                    <Ionicons name="open-outline" size={16} color={COLORS.primary} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            ))}
+              ))
+            )}
           </View>
         );
 
@@ -303,9 +379,28 @@ export default function TargetCompaniesScreen() {
                     </View>
                   ))}
                 </View>
-                <TouchableOpacity style={styles.courseButton}>
+                <TouchableOpacity
+                  style={styles.courseButton}
+                  onPress={async () => {
+                    try {
+                      let url = course.link;
+                      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                        url = 'https://' + url;
+                      }
+                      const canOpen = await Linking.canOpenURL(url);
+                      if (canOpen) {
+                        await Linking.openURL(url);
+                      } else {
+                        Alert.alert('Error', 'Cannot open this course link.');
+                      }
+                    } catch (error) {
+                      console.error('Error opening course link:', error);
+                      Alert.alert('Error', 'Could not open course link.');
+                    }
+                  }}
+                >
                   <Text style={styles.courseButtonText}>View Course</Text>
-                  <Ionicons name="open-outline" size={16} color="#059669" />
+                  <Ionicons name="open-outline" size={16} color={COLORS.primary} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -323,21 +418,36 @@ export default function TargetCompaniesScreen() {
               return (
                 <View key={category} style={styles.checklistCategory}>
                   <Text style={styles.categoryTitle}>{category}</Text>
-                  {items.map((item) => (
-                    <View key={item.id} style={styles.checklistItem}>
-                      <TouchableOpacity style={styles.checkbox}>
-                        {item.completed && (
-                          <Ionicons name="checkmark" size={16} color="#059669" />
-                        )}
-                      </TouchableOpacity>
-                      <View style={styles.checklistContent}>
-                        <Text style={[styles.checklistTitle, item.completed && styles.completedTitle]}>
-                          {item.title}
-                        </Text>
-                        <Text style={styles.checklistDescription}>{item.description}</Text>
+                  {items.map((item) => {
+                    // Get completion state from Redux
+                    const isCompleted = checklistCompletions[selectedCompany.id]?.[item.id] || false;
+
+                    return (
+                      <View key={item.id} style={styles.checklistItem}>
+                        <TouchableOpacity
+                          style={styles.checkbox}
+                          onPress={() => {
+                            if (selectedCompany.id) {
+                              dispatch(toggleChecklistItem({
+                                companyId: selectedCompany.id,
+                                checklistItemId: item.id,
+                              }));
+                            }
+                          }}
+                        >
+                          {isCompleted && (
+                            <Ionicons name="checkmark" size={16} color="#059669" />
+                          )}
+                        </TouchableOpacity>
+                        <View style={styles.checklistContent}>
+                          <Text style={[styles.checklistTitle, isCompleted && styles.completedTitle]}>
+                            {item.title}
+                          </Text>
+                          <Text style={styles.checklistDescription}>{item.description}</Text>
+                        </View>
                       </View>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               );
             })}
@@ -646,6 +756,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
     paddingVertical: 60,
+  },
+  emptyEventsState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyEventsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyEventsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   emptyStateTitle: {
     fontSize: 20,
