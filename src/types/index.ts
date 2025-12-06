@@ -33,6 +33,7 @@ export interface CompanyRecommendation {
   name: string;
   logo: string;
   industry: string;
+  isCustom?: boolean; // Flag to identify user-created companies
   applicationTimeline: {
     internship: string;
     fullTime: string;

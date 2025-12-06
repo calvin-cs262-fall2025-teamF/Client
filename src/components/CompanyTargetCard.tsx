@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { CompanyRecommendation, RoleType } from '../types';
 import COLORS from '../constants/colors';
 
@@ -11,6 +12,7 @@ interface CompanyTargetCardProps {
   onPress: () => void;
   onToggleTarget: () => void;
   showAddButton?: boolean;
+  onDelete?: () => void; // New prop for delete action
 }
 
 export const CompanyTargetCard: React.FC<CompanyTargetCardProps> = ({
@@ -20,6 +22,7 @@ export const CompanyTargetCard: React.FC<CompanyTargetCardProps> = ({
   onPress,
   onToggleTarget,
   showAddButton = true,
+  onDelete,
 }) => {
   const getTargetButtonStyle = () => {
     if (isTargeted) {
@@ -43,7 +46,19 @@ export const CompanyTargetCard: React.FC<CompanyTargetCardProps> = ({
     return styles.targetButtonText;
   };
 
-  return (
+  // Render delete action when swiping left
+  const renderRightActions = () => {
+    if (!onDelete) return null;
+
+    return (
+      <TouchableOpacity style={styles.deleteAction} onPress={onDelete}>
+        <Ionicons name="trash" size={24} color="white" />
+        <Text style={styles.deleteText}>Delete</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const cardContent = (
     <TouchableOpacity style={styles.companyCard} onPress={onPress}>
       <View style={styles.cardHeader}>
         <Text style={styles.companyLogo}>{company.logo}</Text>
@@ -96,6 +111,20 @@ export const CompanyTargetCard: React.FC<CompanyTargetCardProps> = ({
       )}
     </TouchableOpacity>
   );
+
+  // Only wrap in Swipeable if onDelete is provided
+  if (onDelete) {
+    return (
+      <Swipeable
+        renderRightActions={renderRightActions}
+        overshootRight={false}
+      >
+        {cardContent}
+      </Swipeable>
+    );
+  }
+
+  return cardContent;
 };
 
 const styles = StyleSheet.create({
@@ -198,5 +227,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#059669',
     fontWeight: '600',
+  },
+  deleteAction: {
+    backgroundColor: '#ef4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  deleteText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
   },
 });

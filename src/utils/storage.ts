@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User, Application, UserTargetCompany, Resume, TailoredResume } from '../types';
+import { User, Application, UserTargetCompany, Resume, TailoredResume, CompanyRecommendation } from '../types';
 
 const STORAGE_KEYS = {
   USER_PREFIX: 'user_',
   APPLICATIONS_PREFIX: 'applications_',
   WEEKLY_GOAL: 'weekly_goal',
   TARGET_COMPANIES_PREFIX: 'target_companies_',
+  CUSTOM_COMPANIES_PREFIX: 'custom_companies_',
   RESUMES_PREFIX: 'resumes_',
   TAILORED_RESUMES_PREFIX: 'tailored_resumes_',
 };
@@ -108,6 +109,28 @@ export const StorageService = {
     }
   },
 
+  // Custom companies operations
+  async saveCustomCompanies(userId: string, customCompanies: CompanyRecommendation[]): Promise<void> {
+    try {
+      const key = `${STORAGE_KEYS.CUSTOM_COMPANIES_PREFIX}${userId}`;
+      await AsyncStorage.setItem(key, JSON.stringify(customCompanies));
+    } catch (error) {
+      console.error('Error saving custom companies:', error);
+      throw error;
+    }
+  },
+
+  async getCustomCompanies(userId: string): Promise<CompanyRecommendation[]> {
+    try {
+      const key = `${STORAGE_KEYS.CUSTOM_COMPANIES_PREFIX}${userId}`;
+      const customCompaniesData = await AsyncStorage.getItem(key);
+      return customCompaniesData ? JSON.parse(customCompaniesData) : [];
+    } catch (error) {
+      console.error('Error getting custom companies:', error);
+      return [];
+    }
+  },
+
   // Utility methods
   async clearUserData(name: string): Promise<void> {
     try {
@@ -117,9 +140,10 @@ export const StorageService = {
         const applicationsKey = `${STORAGE_KEYS.APPLICATIONS_PREFIX}${user.id}`;
         const goalKey = `${STORAGE_KEYS.WEEKLY_GOAL}_${user.id}`;
         const targetCompaniesKey = `${STORAGE_KEYS.TARGET_COMPANIES_PREFIX}${user.id}`;
+        const customCompaniesKey = `${STORAGE_KEYS.CUSTOM_COMPANIES_PREFIX}${user.id}`;
         const resumesKey = `${STORAGE_KEYS.RESUMES_PREFIX}${user.id}`;
         const tailoredKey = `${STORAGE_KEYS.TAILORED_RESUMES_PREFIX}${user.id}`;
-        await AsyncStorage.multiRemove([userKey, applicationsKey, goalKey, targetCompaniesKey, resumesKey, tailoredKey]);
+        await AsyncStorage.multiRemove([userKey, applicationsKey, goalKey, targetCompaniesKey, customCompaniesKey, resumesKey, tailoredKey]);
       }
     } catch (error) {
       console.error('Error clearing user data:', error);
