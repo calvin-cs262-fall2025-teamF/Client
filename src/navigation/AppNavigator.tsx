@@ -16,6 +16,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import JobTrackerScreen from '../screens/JobTrackerScreen';
 import TargetCompaniesScreen from '../screens/TargetCompaniesScreen';
 import ResumeScreen from '../screens/ResumeScreen';
+import JobRecommendationsScreen from '../screens/JobRecommendationsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,6 +42,8 @@ function MainTabs() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'JobTracker') {
             iconName = focused ? 'briefcase' : 'briefcase-outline';
+          } else if (route.name === 'Recommendations') {
+            iconName = focused ? 'search' : 'search-outline';
           } else if (route.name === 'Targets') {
             iconName = focused ? 'business' : 'business-outline';
           } else if (route.name === 'Resume') {
@@ -79,9 +82,14 @@ function MainTabs() {
         options={{ tabBarLabel: 'Job Tracker' }}
       />
       <Tab.Screen
+        name="Recommendations"
+        component={JobRecommendationsScreen}
+        options={{ tabBarLabel: 'Jobs' }}
+      />
+      <Tab.Screen
         name="Targets"
         component={TargetCompaniesScreen}
-        options={{ tabBarLabel: 'Target Companies' }}
+        options={{ tabBarLabel: 'Companies' }}
       />
       <Tab.Screen
         name="Resume"

@@ -128,3 +128,33 @@ export interface ResumeTailoringRequest {
   companyName: string;
   positionTitle: string;
 }
+
+// Job Recommendations Types
+export type JobType = 'internship' | 'newgrad';
+
+export interface JobListing {
+  company: string;
+  title: string;
+  locations: string[];
+  url: string;
+  date_posted: string;
+  sponsorship?: string;
+  is_active: boolean;
+  terms?: string[];
+  categories: string[];
+}
+
+export interface UserJobPreferences {
+  jobType: JobType;
+  categories: string[];
+  locations?: string[];
+  requiresSponsorship?: boolean;
+}
+
+export interface JobRecommendationsState {
+  jobs: JobListing[];
+  loading: boolean;
+  error: string | null;
+  preferences: UserJobPreferences;
+  lastFetched: number | null;
+}

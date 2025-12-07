@@ -4,6 +4,7 @@ import applicationsReducer from './applicationsSlice';
 import userTargetCompaniesReducer from './userTargetCompaniesSlice';
 import resumeReducer from './resumeSlice';
 import checklistReducer from './checklistSlice';
+import jobRecommendationsReducer from './jobRecommendationsSlice';
 import { storageMiddleware } from './middleware';
 
 export const store = configureStore({
@@ -13,6 +14,7 @@ export const store = configureStore({
     userTargetCompanies: userTargetCompaniesReducer,
     resume: resumeReducer,
     checklist: checklistReducer,
+    jobRecommendations: jobRecommendationsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
