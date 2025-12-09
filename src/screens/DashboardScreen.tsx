@@ -160,6 +160,14 @@ export default function DashboardScreen({ navigation }: any) {
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <TouchableOpacity
             style={styles.actionButton}
+            onPress={() => navigation.navigate('Recommendations')}
+          >
+            <Ionicons name="search-outline" size={24} color="#8b5cf6" />
+            <Text style={styles.actionButtonText}>Find Job Opportunities</Text>
+            <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => navigation.navigate('JobTracker')}
           >
             <Ionicons name="add-circle-outline" size={24} color={COLORS.primary} />
@@ -175,6 +183,7 @@ export default function DashboardScreen({ navigation }: any) {
             <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
           </TouchableOpacity>
         </View>
+
 
         {myTargetCompaniesData.length > 0 && (
           <View style={styles.targetCompaniesSection}>
