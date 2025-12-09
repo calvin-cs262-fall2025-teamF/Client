@@ -1,7 +1,7 @@
 import { store } from '../store';
 import { setUser } from '../store/userSlice';
 import { loadApplications, setWeeklyGoal } from '../store/applicationsSlice';
-import { loadUserTargetCompanies } from '../store/userTargetCompaniesSlice';
+import { loadUserTargetCompanies, loadCustomCompanies } from '../store/userTargetCompaniesSlice';
 import { loadResumes, loadTailoredResumes } from '../store/resumeSlice';
 import { StorageService } from './storage';
 
@@ -20,16 +20,18 @@ export const initializeApp = async (): Promise<void> => {
         // Load user data
         store.dispatch(setUser(userData));
 
-        // Load associated applications, weekly goal, target companies, and resumes
+        // Load associated applications, weekly goal, target companies, custom companies, and resumes
         const applications = await StorageService.getApplications(userData.id);
         const weeklyGoal = await StorageService.getWeeklyGoal(userData.id);
         const userTargetCompanies = await StorageService.getUserTargetCompanies(userData.id);
+        const customCompanies = await StorageService.getCustomCompanies(userData.id);
         const resumes = await StorageService.getUserResumes(userData.id);
         const tailoredResumes = await StorageService.getTailoredResumes(userData.id);
 
         store.dispatch(loadApplications(applications));
         store.dispatch(setWeeklyGoal(weeklyGoal));
         store.dispatch(loadUserTargetCompanies(userTargetCompanies));
+        store.dispatch(loadCustomCompanies(customCompanies));
         store.dispatch(loadResumes(resumes));
         store.dispatch(loadTailoredResumes(tailoredResumes));
       }
