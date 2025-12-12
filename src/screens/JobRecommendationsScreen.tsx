@@ -82,269 +82,269 @@ export default function JobRecommendationsScreen() {
   };
 
   const renderJobCard = ({ item }: { item: JobListing }) => (
-        <TouchableOpacity
-            style={styles.jobCard}
-            onPress={() => handleOpenJob(item.url)}
-            activeOpacity={0.7}
-        >
-            <View style={styles.jobHeader}>
-                <View style={styles.companyBadge}>
-                    <Text style={styles.companyInitial}>
-                        {item.company.charAt(0).toUpperCase()}
-                    </Text>
-                </View>
-                <View style={styles.jobHeaderInfo}>
-                    <Text style={styles.companyName}>{item.company}</Text>
-                    <Text style={styles.jobTitle}>{item.title}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-            </View>
+    <TouchableOpacity
+      style={styles.jobCard}
+      onPress={() => handleOpenJob(item.url)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.jobHeader}>
+        <View style={styles.companyBadge}>
+          <Text style={styles.companyInitial}>
+            {item.company.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+        <View style={styles.jobHeaderInfo}>
+          <Text style={styles.companyName}>{item.company}</Text>
+          <Text style={styles.jobTitle}>{item.title}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+      </View>
 
-            <View style={styles.jobDetails}>
-                <View style={styles.detailRow}>
-                    <Ionicons name="location-outline" size={16} color="#6b7280" />
-                    <Text style={styles.detailText}>
-                        {item.locations.slice(0, 2).join(', ')}
-                        {item.locations.length > 2 && ` +${item.locations.length - 2} more`}
-                    </Text>
-                </View>
+      <View style={styles.jobDetails}>
+        <View style={styles.detailRow}>
+          <Ionicons name="location-outline" size={16} color="#6b7280" />
+          <Text style={styles.detailText}>
+            {item.locations.slice(0, 2).join(', ')}
+            {item.locations.length > 2 && ` +${item.locations.length - 2} more`}
+          </Text>
+        </View>
 
-                {item.sponsorship && (
-                    <View style={styles.detailRow}>
-                        <Ionicons name="globe-outline" size={16} color="#059669" />
-                        <Text style={[styles.detailText, { color: '#059669' }]}>
-                            {item.sponsorship}
-                        </Text>
-                    </View>
-                )}
-            </View>
-
-            <View style={styles.categoriesContainer}>
-                {item.categories.slice(0, 3).map((category, index) => (
-                    <View key={index} style={styles.categoryBadge}>
-                        <Text style={styles.categoryText}>{category}</Text>
-                    </View>
-                ))}
-                {item.categories.length > 3 && (
-                    <View style={styles.categoryBadge}>
-                        <Text style={styles.categoryText}>+{item.categories.length - 3}</Text>
-                    </View>
-                )}
-            </View>
-
-            <Text style={styles.datePosted}>
-                Posted: {new Date(item.date_posted).toLocaleDateString()}
+        {item.sponsorship && (
+          <View style={styles.detailRow}>
+            <Ionicons name="globe-outline" size={16} color="#059669" />
+            <Text style={[styles.detailText, { color: '#059669' }]}>
+              {item.sponsorship}
             </Text>
-        </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.categoriesContainer}>
+        {item.categories.slice(0, 3).map((category, index) => (
+          <View key={index} style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{category}</Text>
+          </View>
+        ))}
+        {item.categories.length > 3 && (
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>+{item.categories.length - 3}</Text>
+          </View>
+        )}
+      </View>
+
+      <Text style={styles.datePosted}>
+        Posted: {new Date(item.date_posted).toLocaleDateString()}
+      </Text>
+    </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
-        <View style={styles.emptyState}>
-            <Ionicons name="briefcase-outline" size={64} color="#d1d5db" />
-            <Text style={styles.emptyStateTitle}>No Jobs Found</Text>
-            <Text style={styles.emptyStateText}>
-                Try adjusting your filters or check back later for new opportunities
-            </Text>
-            <TouchableOpacity
-                style={styles.clearFiltersButton}
-                onPress={handleClearFilters}
-            >
-                <Text style={styles.clearFiltersButtonText}>Clear Filters</Text>
-            </TouchableOpacity>
-        </View>
+    <View style={styles.emptyState}>
+      <Ionicons name="briefcase-outline" size={64} color="#d1d5db" />
+      <Text style={styles.emptyStateTitle}>No Jobs Found</Text>
+      <Text style={styles.emptyStateText}>
+        Try adjusting your filters or check back later for new opportunities
+      </Text>
+      <TouchableOpacity
+        style={styles.clearFiltersButton}
+        onPress={handleClearFilters}
+      >
+        <Text style={styles.clearFiltersButtonText}>Clear Filters</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderFilterModal = () => (
-        <View style={styles.filterModal}>
-            <View style={styles.filterHeader}>
-                <Text style={styles.filterTitle}>Filter Jobs</Text>
-                <TouchableOpacity onPress={() => setShowFilters(false)}>
-                    <Ionicons name="close" size={24} color="#6b7280" />
-                </TouchableOpacity>
-            </View>
+    <View style={styles.filterModal}>
+      <View style={[styles.filterHeader, { paddingTop: Math.max(insets.top, 20) }]}>
+        <Text style={styles.filterTitle}>Filter Jobs</Text>
+        <TouchableOpacity onPress={() => setShowFilters(false)}>
+          <Ionicons name="close" size={24} color="#6b7280" />
+        </TouchableOpacity>
+      </View>
 
-            <ScrollView style={styles.filterContent}>
-                <Text style={styles.filterSectionTitle}>Categories</Text>
-                <View style={styles.filterOptions}>
-                    {availableCategories.map((category) => (
-                        <TouchableOpacity
-                            key={category}
-                            style={[
-                              styles.filterOption,
-                              preferences.categories.includes(category) && styles.filterOptionActive,
-                            ]}
-                            onPress={() => handleCategoryToggle(category)}
-                        >
-                            <Text
-                                style={[
-                                  styles.filterOptionText,
-                                  preferences.categories.includes(category)
-                                    && styles.filterOptionTextActive,
-                                ]}
-                            >
-                                {category}
-                            </Text>
-                            {preferences.categories.includes(category) && (
-                                <Ionicons name="checkmark" size={20} color={COLORS.primary} />
-                            )}
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                <Text style={styles.filterSectionTitle}>Sponsorship</Text>
-                <TouchableOpacity
-                    style={[
-                      styles.filterOption,
-                      preferences.requiresSponsorship && styles.filterOptionActive,
-                    ]}
-                    onPress={() => dispatch(setRequiresSponsorship(!preferences.requiresSponsorship))}
-                >
-                    <Text
-                        style={[
-                          styles.filterOptionText,
-                          preferences.requiresSponsorship && styles.filterOptionTextActive,
-                        ]}
-                    >
-                        Requires Visa Sponsorship
-                    </Text>
-                    {preferences.requiresSponsorship && (
-                        <Ionicons name="checkmark" size={20} color={COLORS.primary} />
-                    )}
-                </TouchableOpacity>
-            </ScrollView>
-
-            <View style={styles.filterActions}>
-                <TouchableOpacity
-                    style={styles.clearButton}
-                    onPress={handleClearFilters}
-                >
-                    <Text style={styles.clearButtonText}>Clear All</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.applyButton}
-                    onPress={handleApplyFilters}
-                >
-                    <Text style={styles.applyButtonText}>Apply Filters</Text>
-                </TouchableOpacity>
-            </View>
+      <ScrollView style={styles.filterContent}>
+        <Text style={styles.filterSectionTitle}>Categories</Text>
+        <View style={styles.filterOptions}>
+          {availableCategories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.filterOption,
+                preferences.categories.includes(category) && styles.filterOptionActive,
+              ]}
+              onPress={() => handleCategoryToggle(category)}
+            >
+              <Text
+                style={[
+                  styles.filterOptionText,
+                  preferences.categories.includes(category)
+                  && styles.filterOptionTextActive,
+                ]}
+              >
+                {category}
+              </Text>
+              {preferences.categories.includes(category) && (
+                <Ionicons name="checkmark" size={20} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
+          ))}
         </View>
+
+        <Text style={styles.filterSectionTitle}>Sponsorship</Text>
+        <TouchableOpacity
+          style={[
+            styles.filterOption,
+            preferences.requiresSponsorship && styles.filterOptionActive,
+          ]}
+          onPress={() => dispatch(setRequiresSponsorship(!preferences.requiresSponsorship))}
+        >
+          <Text
+            style={[
+              styles.filterOptionText,
+              preferences.requiresSponsorship && styles.filterOptionTextActive,
+            ]}
+          >
+            Requires Visa Sponsorship
+          </Text>
+          {preferences.requiresSponsorship && (
+            <Ionicons name="checkmark" size={20} color={COLORS.primary} />
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+
+      <View style={[styles.filterActions, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={handleClearFilters}
+        >
+          <Text style={styles.clearButtonText}>Clear All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.applyButton}
+          onPress={handleApplyFilters}
+        >
+          <Text style={styles.applyButtonText}>Apply Filters</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
-                <View style={styles.headerContent}>
-                    <View>
-                        <Text style={styles.greeting}>Job Recommendations</Text>
-                        <Text style={styles.subtitle}>
-                            {jobs.length} opportunities found
-                        </Text>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.filterButton}
-                        onPress={() => setShowFilters(!showFilters)}
-                    >
-                        <Ionicons name="options-outline" size={20} color={COLORS.primary} />
-                        {(preferences.categories.length > 0 || preferences.requiresSponsorship) && (
-                            <View style={styles.filterBadge} />
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-                {/* Job Type Selector */}
-                <View style={styles.jobTypeSelector}>
-                    <TouchableOpacity
-                        style={[
-                          styles.jobTypeButton,
-                          preferences.jobType === 'internship' && styles.jobTypeButtonActive,
-                        ]}
-                        onPress={() => handleJobTypeChange('internship')}
-                    >
-                        <Text
-                            style={[
-                              styles.jobTypeButtonText,
-                              preferences.jobType === 'internship'
-                                && styles.jobTypeButtonTextActive,
-                            ]}
-                        >
-                            Internships
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                          styles.jobTypeButton,
-                          preferences.jobType === 'newgrad' && styles.jobTypeButtonActive,
-                        ]}
-                        onPress={() => handleJobTypeChange('newgrad')}
-                    >
-                        <Text
-                            style={[
-                              styles.jobTypeButtonText,
-                              preferences.jobType === 'newgrad' && styles.jobTypeButtonTextActive,
-                            ]}
-                        >
-                            New Grad
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Active Filters */}
-                {preferences.categories.length > 0 && (
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={styles.activeFilters}
-                    >
-                        {preferences.categories.map((category) => (
-                            <View key={category} style={styles.activeFilterBadge}>
-                                <Text style={styles.activeFilterText}>{category}</Text>
-                                <TouchableOpacity onPress={() => handleCategoryToggle(category)}>
-                                    <Ionicons name="close-circle" size={16} color={COLORS.primary} />
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                    </ScrollView>
-                )}
-            </View>
-
-            {/* Error State */}
-            {error && (
-                <View style={styles.errorBanner}>
-                    <Ionicons name="alert-circle" size={20} color="#dc2626" />
-                    <Text style={styles.errorText}>{error}</Text>
-                </View>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) }]}>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.greeting}>Job Recommendations</Text>
+            <Text style={styles.subtitle}>
+              {jobs.length} opportunities found
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilters(!showFilters)}
+          >
+            <Ionicons name="options-outline" size={20} color={COLORS.primary} />
+            {(preferences.categories.length > 0 || preferences.requiresSponsorship) && (
+              <View style={styles.filterBadge} />
             )}
-
-            {/* Filter Modal */}
-            {showFilters && renderFilterModal()}
-
-            {/* Job List */}
-            {loading && jobs.length === 0 ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.loadingText}>Loading recommendations...</Text>
-                </View>
-            ) : (
-                <FlatList
-                    data={jobs}
-                    renderItem={renderJobCard}
-                    keyExtractor={(item, index) => `${item.company}-${item.title}-${index}`}
-                    contentContainerStyle={[
-                      styles.listContent,
-                      { paddingBottom: Math.max(insets.bottom, 20) + 60 },
-                    ]}
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={loading}
-                            onRefresh={handleRefresh}
-                            tintColor={COLORS.primary}
-                        />
-                    }
-                    ListEmptyComponent={renderEmptyState}
-                />
-            )}
+          </TouchableOpacity>
         </View>
+
+        {/* Job Type Selector */}
+        <View style={styles.jobTypeSelector}>
+          <TouchableOpacity
+            style={[
+              styles.jobTypeButton,
+              preferences.jobType === 'internship' && styles.jobTypeButtonActive,
+            ]}
+            onPress={() => handleJobTypeChange('internship')}
+          >
+            <Text
+              style={[
+                styles.jobTypeButtonText,
+                preferences.jobType === 'internship'
+                && styles.jobTypeButtonTextActive,
+              ]}
+            >
+              Internships
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.jobTypeButton,
+              preferences.jobType === 'newgrad' && styles.jobTypeButtonActive,
+            ]}
+            onPress={() => handleJobTypeChange('newgrad')}
+          >
+            <Text
+              style={[
+                styles.jobTypeButtonText,
+                preferences.jobType === 'newgrad' && styles.jobTypeButtonTextActive,
+              ]}
+            >
+              New Grad
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Active Filters */}
+        {preferences.categories.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.activeFilters}
+          >
+            {preferences.categories.map((category) => (
+              <View key={category} style={styles.activeFilterBadge}>
+                <Text style={styles.activeFilterText}>{category}</Text>
+                <TouchableOpacity onPress={() => handleCategoryToggle(category)}>
+                  <Ionicons name="close-circle" size={16} color={COLORS.primary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Error State */}
+      {error && (
+        <View style={styles.errorBanner}>
+          <Ionicons name="alert-circle" size={20} color="#dc2626" />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
+
+      {/* Filter Modal */}
+      {showFilters && renderFilterModal()}
+
+      {/* Job List */}
+      {loading && jobs.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading recommendations...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={jobs}
+          renderItem={renderJobCard}
+          keyExtractor={(item, index) => `${item.company}-${item.title}-${index}`}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: Math.max(insets.bottom, 20) + 60 },
+          ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading}
+              onRefresh={handleRefresh}
+              tintColor={COLORS.primary}
+            />
+          }
+          ListEmptyComponent={renderEmptyState}
+        />
+      )}
+    </View>
   );
 }
 

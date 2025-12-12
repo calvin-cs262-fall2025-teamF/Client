@@ -38,7 +38,14 @@ export class JobRecommendationService {
     preferences: UserJobPreferences,
   ): Promise<JobListing[]> {
     const allJobs = await this.fetchJobData(preferences.jobType);
-    return this.filterJobs(allJobs, preferences);
+    const filteredJobs = this.filterJobs(allJobs, preferences);
+
+    // Sort by date_posted descending (newest first)
+    return filteredJobs.sort((a, b) => {
+      const dateA = new Date(a.date_posted).getTime();
+      const dateB = new Date(b.date_posted).getTime();
+      return dateB - dateA;
+    });
   }
 
   /**

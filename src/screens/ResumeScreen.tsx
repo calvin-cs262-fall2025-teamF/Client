@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { format } from 'date-fns';
+import * as Sharing from 'expo-sharing';
+import { WebView } from 'react-native-webview';
 import {
   addResume,
   deleteResume,
@@ -23,6 +26,7 @@ import {
   updateResumeName,
   startResumeTailoring,
   completeTailoring,
+  deleteTailoredResume,
 } from '../store/resumeSlice';
 import { Resume, TailoredResume } from '../types';
 import ResumeTailoringProcessor from '../components/ResumeTailoringProcessor';
@@ -39,6 +43,7 @@ export default function ResumeScreen() {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [selectedResumeForRename, setSelectedResumeForRename] = useState<Resume | null>(null);
   const [newResumeName, setNewResumeName] = useState('');
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   const [tailoringForm, setTailoringForm] = useState({
     selectedResumeId: '',
@@ -174,7 +179,7 @@ export default function ResumeScreen() {
     }, 500);
   };
 
-  const handleTailoringComplete = () => {
+  const handleTailoringComplete = (fileUri: string) => {
     const tailoredResume: TailoredResume = {
       id: Date.now().toString(),
       originalResumeId: tailoringForm.selectedResumeId,
@@ -182,6 +187,7 @@ export default function ResumeScreen() {
       positionTitle: tailoringForm.positionTitle,
       jobDescription: tailoringForm.jobDescription,
       tailoredAt: new Date().toISOString(),
+      fileUri,
       processingStatus: 'completed',
     };
 
@@ -196,7 +202,44 @@ export default function ResumeScreen() {
       jobDescription: '',
     });
 
-    Alert.alert('Success', 'Resume tailored successfully!');
+    Alert.alert('Success', 'Resume tailored and saved successfully!');
+  };
+
+  const handlePreviewTailoredResume = async (resume: TailoredResume) => {
+    if (!resume.fileUri) {
+      Alert.alert('Preview Unavailable', 'The file for this tailored resume is missing.');
+      return;
+    }
+
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(resume.fileUri);
+      if (!fileInfo.exists) {
+        Alert.alert('Error', 'The file has been deleted from your device.');
+        return;
+      }
+
+      setPreviewUri(resume.fileUri);
+    } catch (error) {
+      console.error('Error previewing resume:', error);
+      Alert.alert('Error', 'Failed to open resume preview');
+    }
+  };
+
+  const handleDeleteTailoredResume = (id: string) => {
+    Alert.alert(
+      'Delete Tailored Resume',
+      'Are you sure you want to delete this tailored resume?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(deleteTailoredResume(id));
+          },
+        },
+      ]
+    );
   };
 
   const ResumeCard = ({ resume }: { resume: Resume }) => (
@@ -251,22 +294,70 @@ export default function ResumeScreen() {
     const originalResume = resumes.find(r => r.id === tailored.originalResumeId);
 
     return (
-      <View style={styles.tailoredCard}>
-        <View style={styles.tailoredHeader}>
-          <Ionicons name="document" size={20} color="#059669" />
-          <Text style={styles.tailoredTitle}>
-            {tailored.positionTitle} at {tailored.companyName}
-          </Text>
+      <TouchableOpacity
+        style={styles.tailoredCard}
+        onPress={() => handlePreviewTailoredResume(tailored)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.tailoredHeaderContainer}>
+          <View style={styles.tailoredHeaderInfo}>
+            <View style={styles.tailoredHeader}>
+              <Ionicons name="document" size={20} color="#059669" />
+              <Text style={styles.tailoredTitle}>
+                {tailored.positionTitle} at {tailored.companyName}
+              </Text>
+            </View>
+            <Text style={styles.tailoredSubtitle}>
+              Based on: {originalResume?.name || 'Unknown Resume'}
+            </Text>
+            <Text style={styles.tailoredDate}>
+              Tailored {format(new Date(tailored.tailoredAt), 'MMM dd, yyyy')}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.deleteTailoredButton}
+            onPress={() => handleDeleteTailoredResume(tailored.id)}
+          >
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.tailoredSubtitle}>
-          Based on: {originalResume?.name || 'Unknown Resume'}
-        </Text>
-        <Text style={styles.tailoredDate}>
-          Tailored {format(new Date(tailored.tailoredAt), 'MMM dd, yyyy')}
-        </Text>
-      </View>
+      </TouchableOpacity>
     );
   };
+
+  const renderPreviewModal = () => (
+    <Modal
+      visible={!!previewUri}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setPreviewUri(null)}
+    >
+      <View style={styles.previewModalContainer}>
+        <View style={styles.previewHeader}>
+          <Text style={styles.previewTitle}>Resume Preview</Text>
+          <TouchableOpacity onPress={() => setPreviewUri(null)} style={styles.closePreviewButton}>
+            <Ionicons name="close" size={24} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
+        {previewUri && (
+          <WebView
+            source={{ uri: previewUri }}
+            style={styles.webview}
+            originWhitelist={['*']}
+            allowFileAccess={true}
+            allowFileAccessFromFileURLs={true}
+            startInLoadingState
+            renderLoading={() => (
+              <View style={styles.webviewLoading}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+              </View>
+            )}
+          />
+        )}
+      </View>
+    </Modal>
+  );
 
   return (
     <View style={styles.container}>
@@ -464,6 +555,9 @@ export default function ResumeScreen() {
         resumeUri={resumes.find(r => r.id === tailoringForm.selectedResumeId)?.fileUri || ''}
         onClose={() => setShowProcessingModal(false)}
       />
+
+      {/* Preview Modal */}
+      {renderPreviewModal()}
     </View>
   );
 }
@@ -772,5 +866,52 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  tailoredHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tailoredHeaderInfo: {
+    flex: 1,
+  },
+  deleteTailoredButton: {
+    padding: 8,
+    backgroundColor: '#fee2e2',
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  previewModalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  previewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  previewTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  closePreviewButton: {
+    padding: 4,
+  },
+  webview: {
+    flex: 1,
+  },
+  webviewLoading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
   },
 });

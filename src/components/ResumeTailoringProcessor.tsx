@@ -15,7 +15,7 @@ import { createPdfFromHtml } from '../services/pdfService';
 
 interface ResumeTailoringProcessorProps {
   visible: boolean;
-  onComplete: () => void;
+  onComplete: (uri: string) => void;
   companyName: string;
   positionTitle: string;
   jobDescription: string;
@@ -244,7 +244,7 @@ export default function ResumeTailoringProcessor({
           useNativeDriver: true,
         }),
       ]).start(() => {
-        onComplete();
+        onComplete(pdfUri);
       });
     } catch (err) {
       // eslint-disable-next-line no-console

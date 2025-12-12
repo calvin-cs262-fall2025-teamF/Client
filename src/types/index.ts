@@ -119,6 +119,7 @@ export interface TailoredResume {
   companyName: string;
   positionTitle: string;
   tailoredAt: string;
+  fileUri?: string; // Path to the generated PDF
   processingStatus: 'processing' | 'completed' | 'failed';
 }
 
