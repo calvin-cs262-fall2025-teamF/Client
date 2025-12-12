@@ -21,12 +21,9 @@ import DropdownSelector from '../components/DropdownSelector';
 import { MAJORS, TARGET_ROLES, TARGET_INDUSTRIES, TARGET_LOCATIONS } from '../constants/formOptions';
 import * as DocumentPicker from 'expo-document-picker';
 import COLORS from '../constants/colors';
-import apiService from '../services/apiService';
 
 interface PersonalInfo {
   name: string;
-  email: string;
-  password: string;
   linkedinProfile: string;
 }
 
@@ -52,8 +49,6 @@ export default function SignUpScreen({ navigation }: any) {
 
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     name: '',
-    email: '',
-    password: '',
     linkedinProfile: '',
   });
 
@@ -97,14 +92,9 @@ export default function SignUpScreen({ navigation }: any) {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!personalInfo.name || !personalInfo.email || !personalInfo.password || !education.university || !education.major) {
+  const handleSubmit = () => {
+    if (!personalInfo.name || !education.university || !education.major) {
       Alert.alert('Error', 'Please fill in all required fields');
-      return;
-    }
-
-    if (personalInfo.password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
       return;
     }
 
@@ -112,10 +102,8 @@ export default function SignUpScreen({ navigation }: any) {
     const matchedCompanyIds = CompanyMatcher.getMatchedCompanyIds(companyTexts);
     const unmatchedCompanies = CompanyMatcher.getUnmatchedCompanies(companyTexts);
 
-    // Prepare user data for API (include email and password)
-    const signupData = {
-      email: personalInfo.email,
-      password: personalInfo.password,
+    const newUser: User = {
+      id: Date.now().toString(),
       name: personalInfo.name,
       linkedinProfile: personalInfo.linkedinProfile,
       university: education.university,
@@ -127,23 +115,10 @@ export default function SignUpScreen({ navigation }: any) {
       targetLocations: careerPreferences.targetLocations,
       resumeUri: resumeUri || undefined,
       weeklyGoal: 5,
+      createdAt: new Date().toISOString(),
     };
 
-    // Save to backend API
-    try {
-      const apiResponse = await apiService.signup(signupData);
-      if (apiResponse.data) {
-        // API signup successful - token is automatically stored by apiService
-        const savedUser: User = apiResponse.data.user || apiResponse.data;
-        dispatch(setUser(savedUser));
-      } else {
-        Alert.alert('Error', apiResponse.error || 'Failed to create account. Please try again.');
-        return;
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to create account. Please try again.');
-      return;
-    }
+    dispatch(setUser(newUser));
 
     if (matchedCompanyIds.length > 0) {
       dispatch(initializeTargetCompaniesFromSignup(matchedCompanyIds));
@@ -162,26 +137,6 @@ export default function SignUpScreen({ navigation }: any) {
               value={personalInfo.name}
               onChangeText={(text) => setPersonalInfo({ ...personalInfo, name: text })}
               placeholder="Enter your full name"
-            />
-            <Text style={styles.inputLabel}>Email *</Text>
-            <TextInput
-              style={styles.input}
-              value={personalInfo.email}
-              onChangeText={(text) => setPersonalInfo({ ...personalInfo, email: text })}
-              placeholder="Enter your email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-            />
-            <Text style={styles.inputLabel}>Password *</Text>
-            <TextInput
-              style={styles.input}
-              value={personalInfo.password}
-              onChangeText={(text) => setPersonalInfo({ ...personalInfo, password: text })}
-              placeholder="Enter your password (min 6 characters)"
-              secureTextEntry
-              autoCapitalize="none"
-              autoComplete="password"
             />
             <Text style={styles.inputLabel}>LinkedIn Profile</Text>
             <TextInput

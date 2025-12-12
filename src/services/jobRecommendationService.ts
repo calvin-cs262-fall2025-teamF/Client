@@ -9,9 +9,22 @@ import { JobListing, UserJobPreferences, JobType } from '../types';
  */
 
 const GITHUB_URLS = {
-  internship: 'https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/listings.json',
-  newgrad: 'https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/listings.json',
+  internship: 'https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json',
+  newgrad: 'https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json',
 };
+
+
+interface GitHubJob {
+  company_name: string;
+  title: string;
+  locations: string[];
+  url: string;
+  date_posted: number;
+  sponsorship: string;
+  active: boolean;
+  terms: string[];
+  id: string;
+}
 
 export class JobRecommendationService {
   private static CACHE_KEY_PREFIX = 'job_recommendations_';
@@ -48,12 +61,59 @@ export class JobRecommendationService {
       throw new Error(`Failed to fetch job data: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const rawData: GitHubJob[] = await response.json();
+
+    // Map GitHub data to JobListing format
+    const data: JobListing[] = rawData.map(job => ({
+      company: job.company_name,
+      title: job.title,
+      locations: job.locations,
+      url: job.url,
+      date_posted: new Date(job.date_posted * 1000).toISOString(),
+      sponsorship: job.sponsorship,
+      is_active: job.active,
+      terms: job.terms,
+      categories: this.deriveCategories(job.title),
+    }));
 
     // Cache the data
     await this.cacheData(jobType, data);
 
     return data;
+  }
+
+  /**
+   * Derive categories from job title
+   */
+  private static deriveCategories(title: string): string[] {
+    const categories: string[] = [];
+    const lowerTitle = title.toLowerCase();
+
+    if (lowerTitle.includes('software') || lowerTitle.includes('developer') || lowerTitle.includes('engineer') || lowerTitle.includes('full stack') || lowerTitle.includes('backend') || lowerTitle.includes('frontend')) {
+      categories.push('Software Engineering');
+    }
+    if (lowerTitle.includes('data') || lowerTitle.includes('analyst') || lowerTitle.includes('scientist') || lowerTitle.includes('learning')) {
+      categories.push('Data Science');
+    }
+    if (lowerTitle.includes('product') || lowerTitle.includes('manager') || lowerTitle.includes('pm')) {
+      categories.push('Product Management');
+    }
+    if (lowerTitle.includes('security') || lowerTitle.includes('cyber')) {
+      categories.push('Cybersecurity');
+    }
+    if (lowerTitle.includes('hardware') || lowerTitle.includes('embedded') || lowerTitle.includes('electrical')) {
+      categories.push('Hardware Engineering');
+    }
+    if (lowerTitle.includes('quant') || lowerTitle.includes('trading') || lowerTitle.includes('research')) {
+      categories.push('Quantitative Finance');
+    }
+
+    // Default category if none matched
+    if (categories.length === 0) {
+      categories.push('Other');
+    }
+
+    return categories;
   }
 
   /**
@@ -69,16 +129,16 @@ export class JobRecommendationService {
 
       // Match categories (if specified)
       const hasMatchingCategory = preferences.categories.length === 0
-                || job.categories.some((cat) => preferences.categories.includes(cat));
+        || job.categories.some((cat) => preferences.categories.includes(cat));
 
       // Match location (if specified)
       const hasMatchingLocation = !preferences.locations
-                || preferences.locations.length === 0
-                || job.locations.some((loc) => preferences.locations!.includes(loc) || loc === 'Remote');
+        || preferences.locations.length === 0
+        || job.locations.some((loc) => preferences.locations!.includes(loc) || loc === 'Remote');
 
       // Match sponsorship (if required)
       const hasSponsorship = !preferences.requiresSponsorship
-                || job.sponsorship === 'Offers Sponsorship';
+        || job.sponsorship === 'Offers Sponsorship';
 
       return hasMatchingCategory && hasMatchingLocation && hasSponsorship;
     });
