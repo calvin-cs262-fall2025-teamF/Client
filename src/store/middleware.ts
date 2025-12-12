@@ -34,6 +34,12 @@ export const storageMiddleware: Middleware = (store) => (next) => (action: any) 
         state.user.currentUser.id,
         state.userTargetCompanies.targetCompanies
       ).catch(console.error);
+
+      // Also save custom companies
+      StorageService.saveCustomCompanies(
+        state.user.currentUser.id,
+        state.userTargetCompanies.customCompanies
+      ).catch(console.error);
     }
   }
 
