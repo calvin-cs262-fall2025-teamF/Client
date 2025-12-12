@@ -34,6 +34,13 @@ const applicationsSlice = createSlice({
     loadApplications: (state, action: PayloadAction<Application[]>) => {
       state.applications = action.payload;
     },
+    replaceApplication: (state, action: PayloadAction<{ oldId: string; newApplication: Application }>) => {
+      const { oldId, newApplication } = action.payload;
+      const index = state.applications.findIndex(app => app.id === oldId);
+      if (index !== -1) {
+        state.applications[index] = newApplication;
+      }
+    },
   },
 });
 
@@ -42,6 +49,7 @@ export const {
   updateApplication,
   deleteApplication,
   setWeeklyGoal,
-  loadApplications
+  loadApplications,
+  replaceApplication
 } = applicationsSlice.actions;
 export default applicationsSlice.reducer;

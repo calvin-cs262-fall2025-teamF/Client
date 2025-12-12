@@ -1,10 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
-// Export API key so it can be shared with other services
-export const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '';
-
-// Tavily API key for real-time event search
-export const TAVILY_API_KEY = process.env.EXPO_PUBLIC_TAVILY_API_KEY || '';
+// TODO: Replace with your actual API key or use an environment variable
+const ANTHROPIC_API_KEY = 'YOUR_ANTHROPIC_API_KEY_HERE';
 
 export interface JobDetails {
     companyName: string;
