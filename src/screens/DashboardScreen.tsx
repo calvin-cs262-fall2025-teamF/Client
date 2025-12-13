@@ -17,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { targetCompanies } from '../data/companiesData';
 import { startOfWeek, endOfWeek, isWithinInterval, parseISO } from 'date-fns';
 import COLORS from '../constants/colors';
+import { HelpModal } from '../components/HelpModal';
+import { helpContent } from '../data/helpContent';
 
 const getCompanyLogoUrl = (companyName: string): string | null => {
   const logoMap: Record<string, string> = {
@@ -35,6 +37,7 @@ export default function DashboardScreen({ navigation }: any) {
   const { currentUser } = useSelector((state: RootState) => state.user);
   const { applications, weeklyGoal } = useSelector((state: RootState) => state.applications);
   const { targetCompanies: userTargetCompanies } = useSelector((state: RootState) => state.userTargetCompanies);
+  const [showHelpModal, setShowHelpModal] = React.useState(false);
 
   const currentWeekStart = startOfWeek(new Date());
   const currentWeekEnd = endOfWeek(new Date());
@@ -120,10 +123,18 @@ export default function DashboardScreen({ navigation }: any) {
             </Text>
             <Text style={styles.subtitle}>Here's your job search progress</Text>
           </View>
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={20} color="#6b7280" />
-            <Text style={styles.signOutText}>Sign Out</Text>
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.helpButton}
+              onPress={() => setShowHelpModal(true)}
+            >
+              <Ionicons name="help-circle-outline" size={24} color="#6b7280" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <Ionicons name="log-out-outline" size={20} color="#6b7280" />
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -276,6 +287,13 @@ export default function DashboardScreen({ navigation }: any) {
           </View>
         )}
       </ScrollView>
+
+      {/* Help Modal */}
+      <HelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        content={helpContent.Dashboard}
+      />
     </View>
   );
 }
@@ -347,6 +365,15 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  helpButton: {
+    padding: 8,
+    borderRadius: 8,
   },
   signOutButton: {
     flexDirection: 'row',

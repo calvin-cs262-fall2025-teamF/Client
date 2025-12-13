@@ -26,6 +26,8 @@ import {
 } from '../store/jobRecommendationsSlice';
 import { JobListing, JobType } from '../types';
 import COLORS from '../constants/colors';
+import { HelpModal } from '../components/HelpModal';
+import { helpContent } from '../data/helpContent';
 
 export default function JobRecommendationsScreen() {
   const insets = useSafeAreaInsets();
@@ -38,6 +40,7 @@ export default function JobRecommendationsScreen() {
   const { currentUser } = useSelector((state: RootState) => state.user);
 
   const [showFilters, setShowFilters] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [availableCategories] = useState([
     'Software Engineering',
     'Data Science',
@@ -241,15 +244,23 @@ export default function JobRecommendationsScreen() {
               {jobs.length} opportunities found
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.filterButton}
-            onPress={() => setShowFilters(!showFilters)}
-          >
-            <Ionicons name="options-outline" size={20} color={COLORS.primary} />
-            {(preferences.categories.length > 0 || preferences.requiresSponsorship) && (
-              <View style={styles.filterBadge} />
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.helpButton}
+              onPress={() => setShowHelpModal(true)}
+            >
+              <Ionicons name="help-circle-outline" size={24} color="#6b7280" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setShowFilters(!showFilters)}
+            >
+              <Ionicons name="options-outline" size={20} color={COLORS.primary} />
+              {(preferences.categories.length > 0 || preferences.requiresSponsorship) && (
+                <View style={styles.filterBadge} />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Job Type Selector */}
@@ -344,6 +355,13 @@ export default function JobRecommendationsScreen() {
           ListEmptyComponent={renderEmptyState}
         />
       )}
+
+      {/* Help Modal */}
+      <HelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        content={helpContent.Recommendations}
+      />
     </View>
   );
 }
@@ -365,6 +383,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 16,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  helpButton: {
+    padding: 4,
   },
   greeting: {
     fontSize: 24,

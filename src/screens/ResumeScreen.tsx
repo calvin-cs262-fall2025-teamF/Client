@@ -31,6 +31,8 @@ import {
 import { Resume, TailoredResume } from '../types';
 import ResumeTailoringProcessor from '../components/ResumeTailoringProcessor';
 import COLORS from '../constants/colors';
+import { HelpModal } from '../components/HelpModal';
+import { helpContent } from '../data/helpContent';
 
 export default function ResumeScreen() {
   const dispatch = useDispatch();
@@ -41,6 +43,7 @@ export default function ResumeScreen() {
   const [showTailoringModal, setShowTailoringModal] = useState(false);
   const [showProcessingModal, setShowProcessingModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [selectedResumeForRename, setSelectedResumeForRename] = useState<Resume | null>(null);
   const [newResumeName, setNewResumeName] = useState('');
   const [previewUri, setPreviewUri] = useState<string | null>(null);
@@ -363,8 +366,18 @@ export default function ResumeScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: Math.max(insets.top - 2, 28) }]}>
-        <Text style={styles.title}>Resume Manager</Text>
-        <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
+        <View style={styles.headerTitleRow}>
+          <View>
+            <Text style={styles.title}>Resume Manager</Text>
+            <Text style={styles.subtitle}>Upload and tailor your resumes for specific jobs</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={() => setShowHelpModal(true)}
+          >
+            <Ionicons name="help-circle-outline" size={24} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -558,6 +571,13 @@ export default function ResumeScreen() {
 
       {/* Preview Modal */}
       {renderPreviewModal()}
+
+      {/* Help Modal */}
+      <HelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        content={helpContent.Resume}
+      />
     </View>
   );
 }
@@ -572,6 +592,14 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     backgroundColor: '#f9fafb',
     borderBottomWidth: 0,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  helpButton: {
+    padding: 4,
   },
   title: {
     fontSize: 24,

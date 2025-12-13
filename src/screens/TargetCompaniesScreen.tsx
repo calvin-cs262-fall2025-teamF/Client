@@ -22,6 +22,8 @@ import { addTargetCompany, removeTargetCompany, addCustomCompany, removeCustomCo
 import { format } from 'date-fns';
 import DropdownSelector from '../components/DropdownSelector';
 import COLORS from '../constants/colors';
+import { HelpModal } from '../components/HelpModal';
+import { helpContent } from '../data/helpContent';
 
 const getCompanyLogoUrl = (companyName: string): string | null => {
   const logoMap: Record<string, string> = {
@@ -45,6 +47,7 @@ export default function TargetCompaniesScreen() {
   const [newCompanyName, setNewCompanyName] = useState('');
   const [isAddingCompany, setIsAddingCompany] = useState(false);
   const [selectedCompaniesToAdd, setSelectedCompaniesToAdd] = useState<string[]>([]);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // Get user's target company IDs with safety checks
   const userTargetCompanyIds = React.useMemo(() => {
@@ -474,7 +477,15 @@ export default function TargetCompaniesScreen() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top - 2, 28) }]}>
-        <Text style={styles.title}>Target Companies</Text>
+        <View style={styles.headerTitleRow}>
+          <Text style={styles.title}>Target Companies</Text>
+          <TouchableOpacity
+            style={styles.helpButton}
+            onPress={() => setShowHelpModal(true)}
+          >
+            <Ionicons name="help-circle-outline" size={24} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
 
         {/* Header info */}
         <View style={styles.headerInfo}>
@@ -645,6 +656,13 @@ export default function TargetCompaniesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Help Modal */}
+      <HelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        content={helpContent.Targets}
+      />
     </View>
   );
 }
@@ -701,6 +719,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 0,
     borderBottomWidth: 0,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  helpButton: {
+    padding: 4,
   },
   title: {
     fontSize: 24,
