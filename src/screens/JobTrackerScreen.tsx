@@ -21,8 +21,10 @@ import { Application, ApplicationStatus } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import COLORS from '../constants/colors';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { HelpModal } from '../components/HelpModal';
 import { helpContent } from '../data/helpContent';
+
 
 export default function JobTrackerScreen() {
   const dispatch = useDispatch();
