@@ -28,7 +28,8 @@ import { Application, ApplicationStatus } from '../types';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import COLORS from '../constants/colors';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { HelpModal } from '../components/HelpModal';
+import { helpContent } from '../data/helpContent';
 
 export default function JobTrackerScreen() {
   const insets = useSafeAreaInsets();
@@ -38,6 +39,7 @@ export default function JobTrackerScreen() {
   const { applications, weeklyGoal } = useSelector((state: RootState) => state.applications);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [editingApplication, setEditingApplication] = useState<Application | null>(null);
   const [filterStatus, setFilterStatus] = useState<ApplicationStatus | 'All'>('All');
 
@@ -363,6 +365,14 @@ export default function JobTrackerScreen() {
               <Text style={styles.title}>Job Tracker</Text>
               <View style={styles.headerActions}>
                 <TouchableOpacity
+                  style={styles.helpButton}
+                  onPress={() => setShowHelpModal(true)}
+                  accessibilityLabel="Help"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="help-circle-outline" size={24} color="#6b7280" />
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={styles.goalButton}
                   onPress={() => setShowGoalModal(true)}
                   accessibilityLabel="Set weekly application goal"
@@ -642,6 +652,13 @@ export default function JobTrackerScreen() {
           </View>
         )}
       </Modal>
+
+      {/* Help Modal */}
+      <HelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        content={helpContent.JobTracker}
+      />
     </>
   );
 }
@@ -675,6 +692,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  helpButton: {
+    padding: 4,
   },
   goalButton: {
     flexDirection: 'row',

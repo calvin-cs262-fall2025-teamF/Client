@@ -85,7 +85,7 @@ function MainTabs() {
       <Tab.Screen
         name="Recommendations"
         component={JobRecommendationsScreen}
-        options={{ tabBarLabel: 'Jobs' }}
+        options={{ tabBarLabel: 'Recommendations' }}
       />
       <Tab.Screen
         name="Targets"
